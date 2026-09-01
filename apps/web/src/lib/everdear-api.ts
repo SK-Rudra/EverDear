@@ -77,6 +77,56 @@ export type LetterAttachment = {
   updatedAt: string;
 };
 
+export type ReceiverLetter = Pick<
+  Letter,
+  | "id"
+  | "type"
+  | "status"
+  | "title"
+  | "recipientName"
+  | "senderName"
+  | "content"
+>;
+
+export type ReceiverAttachment = Pick<
+  LetterAttachment,
+  | "id"
+  | "type"
+  | "status"
+  | "originalName"
+  | "mimeType"
+  | "sizeBytes"
+  | "width"
+  | "height"
+  | "durationSeconds"
+  | "sortOrder"
+  | "contentPath"
+>;
+
+export type PublicLetterResponse =
+  ReceiverLetter & {
+    publishedAt: string;
+    expiresAt: string | null;
+    attachments: ReceiverAttachment[];
+  };
+
+export type ShareLinkMetadata = {
+  letterId: string;
+  letterStatus: LetterStatus;
+  tokenPrefix: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastAccessedAt: string | null;
+  accessCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreatedShareLinkResponse =
+  ShareLinkMetadata & {
+    token: string;
+  };
+
 export type CreateLetterInput = {
   type: LetterType;
   recipientName: string;

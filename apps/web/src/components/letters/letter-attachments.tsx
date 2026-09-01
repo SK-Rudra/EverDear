@@ -23,6 +23,7 @@ import {
 
 type LetterAttachmentsProps = {
   letterId: string;
+  readOnly?: boolean;
 };
 
 const MAX_ATTACHMENTS = 8;
@@ -63,6 +64,7 @@ function getErrorMessage(
 
 export function LetterAttachments({
   letterId,
+  readOnly = false,
 }: LetterAttachmentsProps) {
   const inputId = useId();
 
@@ -263,37 +265,40 @@ export function LetterAttachments({
           </p>
         </div>
 
-        <label
-          htmlFor={inputId}
-          className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-bold transition ${
-            uploading ||
-            attachments.length >= MAX_ATTACHMENTS
-              ? "cursor-not-allowed bg-paper-ink/5 text-paper-ink/30"
-              : "cursor-pointer bg-paper-ink text-paper hover:-translate-y-0.5"
-          }`}
-        >
-          {uploading ? (
-            <LoaderCircle
-              aria-hidden="true"
-              className="h-4 w-4 animate-spin"
-            />
-          ) : (
-            <UploadCloud
-              aria-hidden="true"
-              className="h-4 w-4"
-            />
-          )}
+        {!readOnly && (
+          <label
+            htmlFor={inputId}
+            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-bold transition ${
+              uploading ||
+              attachments.length >= MAX_ATTACHMENTS
+                ? "cursor-not-allowed bg-paper-ink/5 text-paper-ink/30"
+                : "cursor-pointer bg-paper-ink text-paper hover:-translate-y-0.5"
+            }`}
+          >
+            {uploading ? (
+              <LoaderCircle
+                aria-hidden="true"
+                className="h-4 w-4 animate-spin"
+              />
+            ) : (
+              <UploadCloud
+                aria-hidden="true"
+                className="h-4 w-4"
+              />
+            )}
 
-          {uploading
-            ? "Uploading..."
-            : "Add media"}
-        </label>
+            {uploading
+              ? "Uploading..."
+              : "Add media"}
+          </label>
+        )}
 
         <input
           id={inputId}
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
           disabled={
+            readOnly ||
             uploading ||
             attachments.length >= MAX_ATTACHMENTS
           }
@@ -317,7 +322,11 @@ export function LetterAttachments({
       ) : attachments.length === 0 ? (
         <label
           htmlFor={inputId}
-          className="mt-6 grid min-h-44 cursor-pointer place-items-center rounded-3xl border border-dashed border-paper-ink/15 bg-paper-ink/[0.025] p-6 text-center transition hover:border-paper-ink/30 hover:bg-paper-ink/[0.045]"
+          className={`mt-6 grid min-h-44 place-items-center rounded-3xl border border-dashed border-paper-ink/15 bg-paper-ink/[0.025] p-6 text-center ${
+            readOnly
+              ? "cursor-default"
+              : "cursor-pointer transition hover:border-paper-ink/30 hover:bg-paper-ink/[0.045]"
+          }`}
         >
           <span>
             <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-paper-ink/5">
@@ -328,12 +337,15 @@ export function LetterAttachments({
             </span>
 
             <span className="mt-3 block font-display text-lg font-bold text-paper-ink">
-              Add a visual memory
+              {readOnly
+                ? "No media was included"
+                : "Add a visual memory"}
             </span>
 
             <span className="mt-1 block text-sm text-paper-ink/45">
-              Pictures up to 10 MB · Videos up
-              to 75 MB
+              {readOnly
+                ? "This published letter contains only words."
+                : "Pictures up to 10 MB · Videos up to 75 MB"}
             </span>
           </span>
         </label>
@@ -389,23 +401,25 @@ export function LetterAttachments({
                       : "Video"}
                   </span>
 
-                  <button
-                    type="button"
-                    disabled={deleting}
-                    onClick={() =>
-                      void handleDelete(
-                        attachment,
-                      )
-                    }
-                    aria-label={`Remove ${attachment.originalName}`}
-                    className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/65 text-white backdrop-blur-md transition hover:bg-rose disabled:opacity-60"
-                  >
-                    {deleting ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </button>
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      disabled={deleting}
+                      onClick={() =>
+                        void handleDelete(
+                          attachment,
+                        )
+                      }
+                      aria-label={`Remove ${attachment.originalName}`}
+                      className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/65 text-white backdrop-blur-md transition hover:bg-rose disabled:opacity-60"
+                    >
+                      {deleting ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between gap-4 px-4 py-3">

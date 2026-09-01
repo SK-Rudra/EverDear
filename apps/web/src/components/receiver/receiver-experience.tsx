@@ -17,16 +17,17 @@ import {
 } from "motion/react";
 import {
   getApiUrl,
-  type Letter,
-  type LetterAttachment,
   type LetterType,
+  type ReceiverAttachment,
+  type ReceiverLetter,
 } from "@/lib/everdear-api";
 import { ReceiverLetterView } from "./receiver-letter-view";
 
 type ReceiverExperienceProps = {
-  letter: Letter;
-  attachments: LetterAttachment[];
+  letter: ReceiverLetter;
+  attachments: ReceiverAttachment[];
   previewMode?: boolean;
+  publicToken?: string;
 };
 
 type ThemeDetails = {
@@ -146,6 +147,7 @@ export function ReceiverExperience({
   letter,
   attachments,
   previewMode = false,
+  publicToken,
 }: ReceiverExperienceProps) {
   const [opened, setOpened] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -157,11 +159,15 @@ export function ReceiverExperience({
   );
 
   const getContentUrl = (
-    attachment: LetterAttachment,
+    attachment: ReceiverAttachment,
   ) =>
-    getApiUrl(
-      `/letters/${letter.id}/attachments/${attachment.id}/content`,
-    );
+    publicToken
+      ? getApiUrl(
+          `/public/letters/${publicToken}/attachments/${attachment.id}/content`,
+        )
+      : getApiUrl(
+          `/letters/${letter.id}/attachments/${attachment.id}/content`,
+        );
 
   return (
     <div

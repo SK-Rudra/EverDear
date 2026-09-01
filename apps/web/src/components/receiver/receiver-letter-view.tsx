@@ -9,8 +9,8 @@ import {
   Users,
 } from "lucide-react";
 import type {
-  Letter,
-  LetterAttachment,
+  ReceiverAttachment,
+   ReceiverLetter,
 } from "@/lib/everdear-api";
 import {
   ReceiverMediaGallery,
@@ -18,10 +18,10 @@ import {
 } from "./receiver-media-gallery";
 
 type ReceiverLetterViewProps = {
-  letter: Letter;
-  attachments: LetterAttachment[];
+  letter: ReceiverLetter;
+  attachments: ReceiverAttachment[];
   getContentUrl: (
-    attachment: LetterAttachment,
+    attachment: ReceiverAttachment,
   ) => string;
 };
 

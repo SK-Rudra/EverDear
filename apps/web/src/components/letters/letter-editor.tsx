@@ -26,6 +26,7 @@ import {
   type UpdateLetterInput,
 } from "@/lib/everdear-api";
 import { LetterAttachments } from "./letter-attachments";
+import { ShareLetterPanel } from "./share-letter-panel";
 
 type LetterEditorProps = {
   letter: Letter;
@@ -86,6 +87,8 @@ export function LetterEditor({
   onUpdated,
   onDeleted,
 }: LetterEditorProps) {
+  const isDraft = letter.status === "DRAFT";
+
   const [type, setType] =
     useState<LetterType>(letter.type);
 
@@ -133,9 +136,14 @@ export function LetterEditor({
     senderName.trim().length > 0;
 
   const previewReady =
-    namesComplete && saveState === "saved";
+    namesComplete &&
+    (isDraft ? saveState === "saved" : true);
 
   useEffect(() => {
+    if (!isDraft) {
+      return;
+    }
+
     const updateInput: UpdateLetterInput = {
       type,
       recipientName,
@@ -204,6 +212,7 @@ export function LetterEditor({
     };
   }, [
     body,
+    isDraft,
     letter.id,
     onUpdated,
     recipientName,
@@ -267,11 +276,12 @@ export function LetterEditor({
                 key={option.type}
                 type="button"
                 aria-pressed={selected}
+                disabled={!isDraft}
                 onClick={() => {
                   setType(option.type);
                   markUnsaved();
                 }}
-                className={`inline-flex h-10 items-center gap-2 rounded-full border px-3.5 text-xs font-bold transition ${
+                className={`inline-flex h-10 items-center gap-2 rounded-full border px-3.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${
                   selected
                     ? option.activeClass
                     : "border-transparent text-muted hover:border-line hover:text-foreground"
@@ -343,19 +353,21 @@ export function LetterEditor({
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => void handleDelete()}
-            disabled={deleting}
-            aria-label="Delete draft"
-            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition hover:border-rose/40 hover:bg-rose/10 hover:text-rose disabled:opacity-50"
-          >
-            {deleting ? (
-              <LoaderCircle className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-          </button>
+          {isDraft && (
+            <button
+              type="button"
+              onClick={() => void handleDelete()}
+              disabled={deleting}
+              aria-label="Delete draft"
+              className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition hover:border-rose/40 hover:bg-rose/10 hover:text-rose disabled:opacity-50"
+            >
+              {deleting ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -384,6 +396,7 @@ export function LetterEditor({
 
             <input
               value={recipientName}
+              disabled={!isDraft}
               onChange={(event) => {
                 setRecipientName(
                   event.target.value,
@@ -398,6 +411,7 @@ export function LetterEditor({
 
           <input
             value={title}
+            disabled={!isDraft}
             onChange={(event) => {
               setTitle(event.target.value);
               markUnsaved();
@@ -412,6 +426,7 @@ export function LetterEditor({
 
           <textarea
             value={body}
+            disabled={!isDraft}
             onChange={(event) => {
               setBody(event.target.value);
               markUnsaved();
@@ -423,7 +438,10 @@ export function LetterEditor({
             className="min-h-[25rem] w-full resize-y appearance-none border-0 bg-transparent p-0 font-display text-lg leading-9 text-paper-ink/85 outline-none ring-0 placeholder:text-paper-ink/25 focus:outline-none focus:ring-0"
           />
 
-          <LetterAttachments letterId={letter.id} />
+          <LetterAttachments
+            letterId={letter.id}
+            readOnly={!isDraft}
+          />
 
           <div className="mt-10 border-t border-paper-ink/10 pt-7">
             <p className="text-right text-sm text-paper-ink/45">
@@ -432,6 +450,7 @@ export function LetterEditor({
 
             <input
               value={senderName}
+              disabled={!isDraft}
               onChange={(event) => {
                 setSenderName(
                   event.target.value,
@@ -446,6 +465,16 @@ export function LetterEditor({
           </div>
         </div>
       </article>
+
+      <ShareLetterPanel
+        letter={letter}
+        canPublish={
+          isDraft &&
+          previewReady &&
+          body.trim().length > 0
+        }
+        onLetterUpdated={onUpdated}
+      />
 
       {saveError && (
         <div

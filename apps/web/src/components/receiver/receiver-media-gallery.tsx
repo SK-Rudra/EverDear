@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { LetterAttachment } from "@/lib/everdear-api";
+import type {  ReceiverAttachment } from "@/lib/everdear-api";
 
 export type ReceiverVariant =
   | "loved"
@@ -9,10 +9,10 @@ export type ReceiverVariant =
   | "family";
 
 type ReceiverMediaGalleryProps = {
-  attachments: LetterAttachment[];
+  attachments: ReceiverAttachment[];
   variant: ReceiverVariant;
   getContentUrl: (
-    attachment: LetterAttachment,
+    attachment: ReceiverAttachment,
   ) => string;
 };
 
