@@ -3,6 +3,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
 
 export function configureApp(
   app: INestApplication,
@@ -15,10 +16,19 @@ export function configureApp(
 
   app.setGlobalPrefix('api/v1');
 
+  app.use(cookieParser());
+
   app.enableCors({
     origin: webOrigin,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    methods: [
+      'GET',
+      'POST',
+      'PUT',
+      'PATCH',
+      'DELETE',
+      'OPTIONS',
+    ],
   });
 
   app.useGlobalPipes(
