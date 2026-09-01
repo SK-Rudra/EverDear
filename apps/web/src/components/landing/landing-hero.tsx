@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -76,7 +75,7 @@ export function LandingHero() {
           <ThemeToggle />
 
           <Link
-            href="/create"
+            href="/write"
             className="group inline-flex min-h-[50px] items-center justify-center gap-2 rounded-full bg-foreground px-5 text-[0.9rem] font-bold text-background shadow-[0_13px_30px_rgba(44,36,48,0.18)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(44,36,48,0.26)]"
           >
             Write a letter
@@ -145,11 +144,12 @@ export function LandingHero() {
                 </div>
 
                 <Link
-                  href="/create"
+                  href="/write"
                   onClick={() => setMenuOpen(false)}
                   className="mt-3 inline-flex min-h-[50px] items-center justify-center gap-2 rounded-2xl bg-foreground px-5 text-sm font-bold text-background"
                 >
                   Write a letter
+
                   <ArrowRight
                     aria-hidden="true"
                     className="h-4 w-4"
@@ -219,7 +219,7 @@ export function LandingHero() {
               whileTap={reduceMotion ? undefined : { scale: 0.98 }}
             >
               <Link
-                href="/create"
+                href="/write"
                 className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-foreground px-7 font-semibold text-background shadow-[0_20px_60px_rgba(0,0,0,0.18)] transition duration-300 hover:shadow-[0_24px_70px_rgba(0,0,0,0.24)] sm:w-auto"
               >
                 Write your letter
@@ -455,4 +455,3 @@ export function LandingHero() {
     </section>
   );
 }
-

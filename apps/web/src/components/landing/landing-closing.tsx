@@ -405,7 +405,7 @@ export function LandingClosing() {
             className="mt-10 inline-block"
           >
             <Link
-              href="/create"
+              href="/write"
               className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-paper px-8 font-semibold text-paper-ink shadow-[0_24px_70px_rgba(0,0,0,0.32)]"
             >
               Write your first letter

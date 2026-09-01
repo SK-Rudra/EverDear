@@ -18,6 +18,7 @@ import { SessionTokenService } from './session-token.service.js';
     SessionAuthGuard,
   ],
   exports: [
+    AuthCookieService,
     SessionAuthGuard,
     SessionService,
   ],

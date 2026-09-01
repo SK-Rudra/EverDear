@@ -3,39 +3,41 @@
 :root {
   color-scheme: light;
 
-  --background: #f7f0e8;
-  --foreground: #2c2430;
-  --surface: #fffaf4;
-  --surface-elevated: #eee6dc;
-  --muted: #716873;
-  --line: rgba(44, 36, 48, 0.13);
-  --soft-line: rgba(44, 36, 48, 0.07);
+  /* Refined, Editorial Warm Palette */
+  --background: #f7f3ee;
+  --foreground: #221d24;
+  --surface: #ffffff;
+  --surface-elevated: #efe9e1;
+  --muted: #837985;
+  --line: rgba(34, 29, 36, 0.08);
+  --soft-line: rgba(34, 29, 36, 0.04);
 
-  --paper: #fffaf4;
-  --paper-ink: #2c2430;
+  --paper: #fcf9f5;
+  --paper-ink: #221d24;
 
-  --rose: #c86b7a;
-  --rose-deep: #9f4c5c;
-  --blue: #6c89a8;
-  --sage: #78947b;
-  --coral: #d28a65;
+  --rose: #d87d8d;
+  --rose-deep: #a85161;
+  --blue: #708fa8;
+  --sage: #7f9982;
+  --coral: #d98e72;
   --amber: var(--coral);
 
-  --rose-glow: rgba(200, 107, 122, 0.18);
-  --font-serif: Georgia, "Times New Roman", serif;
+  --rose-glow: rgba(216, 125, 141, 0.15);
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --background: #17151a;
-  --foreground: #fffaf4;
-  --surface: #241f27;
-  --surface-elevated: #302933;
-  --muted: #b0a5b1;
-  --line: rgba(255, 250, 244, 0.14);
-  --soft-line: rgba(255, 250, 244, 0.08);
-  --rose-glow: rgba(200, 107, 122, 0.24);
+  --background: #131114;
+  --foreground: #f7f3ee;
+  --surface: #1d191f;
+  --surface-elevated: #28232b;
+  --muted: #9b909d;
+  --line: rgba(247, 243, 238, 0.09);
+  --soft-line: rgba(247, 243, 238, 0.04);
+  --rose-glow: rgba(216, 125, 141, 0.2);
 }
 
 @theme inline {
@@ -54,11 +56,11 @@
   --color-amber: var(--amber);
   --color-line: var(--line);
   --color-soft-line: var(--soft-line);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-sans);
   --font-display: var(--font-serif);
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
@@ -66,7 +68,7 @@ html {
   min-width: 320px;
   background: var(--background);
   scroll-behavior: smooth;
-  transition: background-color 350ms ease;
+  transition: background-color 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body {
@@ -75,49 +77,53 @@ body {
   overflow-x: clip;
   background:
     radial-gradient(
-      circle at 10% 0%,
-      rgba(200, 107, 122, 0.08),
-      transparent 28rem
+      circle at 15% 0%,
+      var(--rose-glow),
+      transparent 32rem
     ),
     radial-gradient(
-      circle at 95% 35%,
-      rgba(108, 137, 168, 0.09),
-      transparent 30rem
+      circle at 85% 40%,
+      rgba(112, 143, 168, 0.12),
+      transparent 36rem
     ),
     var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
+  letter-spacing: -0.011em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition:
-    color 350ms ease,
-    background-color 350ms ease;
+    color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/*
- * Every main landing-page section uses the same body background.
- * Cards, letters and floating surfaces keep their individual colours.
- */
 main > section {
   background-color: transparent !important;
 }
 
+/* Subtle Tactile Grain Overlay */
 body::before {
   position: fixed;
-  z-index: 100;
+  z-index: 999;
   inset: 0;
   pointer-events: none;
   content: "";
-  opacity: 0.22;
-  mix-blend-mode: soft-light;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper-noise)' opacity='.16'/%3E%3C/svg%3E");
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.12'/%3E%3C/svg%3E");
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  transition: opacity 200ms ease;
+}
+
+a:hover {
+  opacity: 0.82;
 }
 
 button,
@@ -125,6 +131,7 @@ input,
 textarea,
 select {
   font: inherit;
+  color: inherit;
 }
 
 button,
@@ -132,50 +139,60 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Tactile Focus Ring */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid rgba(108, 137, 168, 0.4);
+  outline: 2px solid var(--rose);
   outline-offset: 4px;
 }
 
 ::selection {
-  background: var(--rose);
-  color: var(--paper-ink);
+  background: var(--rose-glow);
+  color: var(--foreground);
 }
 
+/* Minimal Modern Scrollbars */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  border: 3px solid var(--background);
-  border-radius: 999px;
-  background: var(--rose-deep);
+  border-radius: 99px;
+  background: var(--line);
+  transition: background 200ms ease;
 }
 
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Accessible & Aesthetic Skip Link */
 .skip-link {
   position: fixed;
-  z-index: 200;
-  top: 1rem;
-  left: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 999px;
-  background: var(--paper);
-  color: var(--paper-ink);
-  font-size: 0.8rem;
-  font-weight: 700;
+  z-index: 1000;
+  top: 1.25rem;
+  left: 1.25rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   opacity: 0;
   transform: translateY(-150%);
   transition:
-    opacity 180ms ease,
-    transform 180ms ease;
+    opacity 250ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .skip-link:focus {
