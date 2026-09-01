@@ -1,29 +1,63 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import type { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module.js';
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  it,
+} from 'vitest';
+import { AppModule } from '../src/app.module.js';
+import { configureApp } from '../src/app.setup.js';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: INestApplication;
+  const originalDatabaseUrl = process.env.DATABASE_URL;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+  beforeAll(async () => {
+    const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+
+    if (!testDatabaseUrl) {
+      throw new Error('TEST_DATABASE_URL is not configured');
+    }
+
+    process.env.DATABASE_URL = testDatabaseUrl;
+
+    const moduleFixture: TestingModule =
+      await Test.createTestingModule({
+        imports: [AppModule],
+      }).compile();
 
     app = moduleFixture.createNestApplication();
+
+    configureApp(app, app.get(ConfigService));
+
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    await app.close();
+
+    if (originalDatabaseUrl) {
+      process.env.DATABASE_URL = originalDatabaseUrl;
+    } else {
+      delete process.env.DATABASE_URL;
+    }
   });
 
-  afterEach(async () => {
-    await app.close();
+  it('/api/v1/health (GET)', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/health')
+      .expect(200);
+
+    expect(response.body).toMatchObject({
+      status: 'ok',
+      service: 'everdear-api',
+      database: 'connected',
+    });
+
+    expect(response.body.timestamp).toEqual(expect.any(String));
   });
 });

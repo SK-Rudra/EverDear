@@ -1,22 +1,28 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { describe, expect, it, vi } from 'vitest';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import type { PrismaService } from './prisma/prisma.service.js';
 
 describe('AppController', () => {
-  let appController: AppController;
+  it('returns the API and database health status', async () => {
+    const queryRaw = vi.fn().mockResolvedValue([{ result: 1 }]);
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
+    const prisma = {
+      $queryRaw: queryRaw,
+    } as unknown as PrismaService;
 
-    appController = app.get<AppController>(AppController);
-  });
+    const appService = new AppService(prisma);
+    const appController = new AppController(appService);
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    const result = await appController.getHealth();
+
+    expect(result).toMatchObject({
+      status: 'ok',
+      service: 'everdear-api',
+      database: 'connected',
     });
+
+    expect(queryRaw).toHaveBeenCalledOnce();
+    expect(Number.isNaN(Date.parse(result.timestamp))).toBe(false);
   });
 });
