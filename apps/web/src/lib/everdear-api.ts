@@ -50,6 +50,33 @@ export type Letter = {
   updatedAt: string;
 };
 
+export type AttachmentType =
+  | "IMAGE"
+  | "VIDEO";
+
+export type AttachmentStatus =
+  | "PENDING_UPLOAD"
+  | "PROCESSING"
+  | "READY"
+  | "FAILED";
+
+export type LetterAttachment = {
+  id: string;
+  letterId: string;
+  type: AttachmentType;
+  status: AttachmentStatus;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  durationSeconds: number | null;
+  sortOrder: number;
+  contentPath: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CreateLetterInput = {
   type: LetterType;
   recipientName: string;
@@ -75,12 +102,21 @@ type ApiRequestOptions = Omit<
   "body"
 > & {
   json?: unknown;
+  formData?: FormData;
 };
 
 const apiBaseUrl = (
   process.env.NEXT_PUBLIC_API_URL ??
   "http://localhost:4000/api/v1"
 ).replace(/\/+$/, "");
+
+export function getApiUrl(
+  path: string,
+): string {
+  return `${apiBaseUrl}${
+    path.startsWith("/") ? path : `/${path}`
+  }`;
+}
 
 function getApiErrorMessage(
   body: unknown,
@@ -135,9 +171,19 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const {
     json,
+    formData,
     headers: providedHeaders,
     ...requestOptions
   } = options;
+
+  if (
+    json !== undefined &&
+    formData !== undefined
+  ) {
+    throw new Error(
+      "An API request cannot contain both JSON and form data.",
+    );
+  }
 
   const headers = new Headers(providedHeaders);
 
@@ -151,16 +197,15 @@ export async function apiRequest<T>(
   }
 
   const response = await fetch(
-    `${apiBaseUrl}${
-      path.startsWith("/") ? path : `/${path}`
-    }`,
+    getApiUrl(path),
     {
       ...requestOptions,
       headers,
       body:
-        json === undefined
+        formData ??
+        (json === undefined
           ? undefined
-          : JSON.stringify(json),
+          : JSON.stringify(json)),
       credentials: "include",
       cache: "no-store",
     },

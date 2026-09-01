@@ -2,9 +2,11 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { Prisma } from '../generated/prisma/client.js';
+import { MediaStorage } from '../media/storage/media-storage.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateLetterDto } from './dto/create-letter.dto.js';
 import type { UpdateLetterDto } from './dto/update-letter.dto.js';
@@ -36,8 +38,13 @@ type SelectedLetter = Prisma.LetterGetPayload<{
 
 @Injectable()
 export class LettersService {
+  private readonly logger = new Logger(
+    LettersService.name,
+  );
+
   constructor(
     private readonly prisma: PrismaService,
+    private readonly mediaStorage: MediaStorage,
   ) {}
 
   async createDraft(
@@ -185,6 +192,17 @@ export class LettersService {
     userId: string,
     letterId: string,
   ): Promise<void> {
+    const storedAttachments =
+      await this.prisma.letterAttachment.findMany({
+        where: {
+          letterId,
+        },
+        select: {
+          storageKey: true,
+          thumbnailKey: true,
+        },
+      });
+
     const deleteResult =
       await this.prisma.letter.deleteMany({
         where: {
@@ -199,6 +217,47 @@ export class LettersService {
         userId,
         letterId,
         'deleted',
+      );
+    }
+
+    await this.removeStoredAttachments(
+      letterId,
+      storedAttachments,
+    );
+  }
+
+  private async removeStoredAttachments(
+    letterId: string,
+    attachments: Array<{
+      storageKey: string;
+      thumbnailKey: string | null;
+    }>,
+  ): Promise<void> {
+    const storageKeys = [
+      ...new Set(
+        attachments.flatMap((attachment) => [
+          attachment.storageKey,
+          ...(attachment.thumbnailKey
+            ? [attachment.thumbnailKey]
+            : []),
+        ]),
+      ),
+    ];
+
+    const deletionResults =
+      await Promise.allSettled(
+        storageKeys.map((storageKey) =>
+          this.mediaStorage.delete(storageKey),
+        ),
+      );
+
+    const failureCount = deletionResults.filter(
+      (result) => result.status === 'rejected',
+    ).length;
+
+    if (failureCount > 0) {
+      this.logger.warn(
+        `${failureCount} media object(s) could not be removed for deleted letter ${letterId}`,
       );
     }
   }

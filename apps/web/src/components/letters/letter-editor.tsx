@@ -23,6 +23,7 @@ import {
   type LetterType,
   type UpdateLetterInput,
 } from "@/lib/everdear-api";
+import { LetterAttachments } from "./letter-attachments";
 
 type LetterEditorProps = {
   letter: Letter;
@@ -393,6 +394,8 @@ export function LetterEditor({
             placeholder="Dear someone who matters..."
             className="min-h-[25rem] w-full resize-y appearance-none border-0 bg-transparent p-0 font-display text-lg leading-9 text-paper-ink/85 outline-none ring-0 placeholder:text-paper-ink/25 focus:outline-none focus:ring-0"
           />
+
+          <LetterAttachments letterId={letter.id} />
 
           <div className="mt-10 border-t border-paper-ink/10 pt-7">
             <p className="text-right text-sm text-paper-ink/45">
