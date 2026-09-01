@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useEffect,
   useRef,
@@ -10,6 +11,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Cloud,
+  Eye,
   Heart,
   House,
   LoaderCircle,
@@ -129,6 +131,9 @@ export function LetterEditor({
   const namesComplete =
     recipientName.trim().length > 0 &&
     senderName.trim().length > 0;
+
+  const previewReady =
+    namesComplete && saveState === "saved";
 
   useEffect(() => {
     const updateInput: UpdateLetterInput = {
@@ -314,6 +319,29 @@ export function LetterEditor({
               </>
             )}
           </div>
+
+          {previewReady ? (
+            <Link
+              href={`/preview/${letter.id}`}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Preview receiver experience"
+              title="Preview receiver experience"
+              className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition hover:border-blue/40 hover:bg-blue/10 hover:text-blue"
+            >
+              <Eye className="h-4 w-4" />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              aria-label="Wait for the draft to save before previewing"
+              title="Wait for the draft to save"
+              className="grid h-10 w-10 cursor-not-allowed place-items-center rounded-full border border-line text-muted opacity-35"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+          )}
 
           <button
             type="button"
