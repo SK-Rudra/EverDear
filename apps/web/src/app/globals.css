@@ -1,26 +1,199 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --background: #f7f0e8;
+  --foreground: #2c2430;
+  --surface: #fffaf4;
+  --surface-elevated: #eee6dc;
+  --muted: #716873;
+  --line: rgba(44, 36, 48, 0.13);
+  --soft-line: rgba(44, 36, 48, 0.07);
+
+  --paper: #fffaf4;
+  --paper-ink: #2c2430;
+
+  --rose: #c86b7a;
+  --rose-deep: #9f4c5c;
+  --blue: #6c89a8;
+  --sage: #78947b;
+  --coral: #d28a65;
+  --amber: var(--coral);
+
+  --rose-glow: rgba(200, 107, 122, 0.18);
+  --font-serif: Georgia, "Times New Roman", serif;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: #17151a;
+  --foreground: #fffaf4;
+  --surface: #241f27;
+  --surface-elevated: #302933;
+  --muted: #b0a5b1;
+  --line: rgba(255, 250, 244, 0.14);
+  --soft-line: rgba(255, 250, 244, 0.08);
+  --rose-glow: rgba(200, 107, 122, 0.24);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-paper: var(--paper);
+  --color-paper-ink: var(--paper-ink);
+  --color-muted: var(--muted);
+  --color-rose: var(--rose);
+  --color-rose-deep: var(--rose-deep);
+  --color-blue: var(--blue);
+  --color-sage: var(--sage);
+  --color-coral: var(--coral);
+  --color-amber: var(--amber);
+  --color-line: var(--line);
+  --color-soft-line: var(--soft-line);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--background);
+  scroll-behavior: smooth;
+  transition: background-color 350ms ease;
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: clip;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(200, 107, 122, 0.08),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 95% 35%,
+      rgba(108, 137, 168, 0.09),
+      transparent 30rem
+    ),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    color 350ms ease,
+    background-color 350ms ease;
+}
+
+/*
+ * Every main landing-page section uses the same body background.
+ * Cards, letters and floating surfaces keep their individual colours.
+ */
+main > section {
+  background-color: transparent !important;
+}
+
+body::before {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: 0.22;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper-noise)' opacity='.16'/%3E%3C/svg%3E");
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(108, 137, 168, 0.4);
+  outline-offset: 4px;
+}
+
+::selection {
+  background: var(--rose);
+  color: var(--paper-ink);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid var(--background);
+  border-radius: 999px;
+  background: var(--rose-deep);
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 200;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(-150%);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.skip-link:focus {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
