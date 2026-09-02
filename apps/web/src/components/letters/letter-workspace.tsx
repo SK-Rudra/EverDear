@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -11,16 +12,19 @@ import {
   FileText,
   LogOut,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
 import { NewLetterForm } from "./new-letter-form";
 import {
   apiRequest,
   type AuthenticatedUser,
   type Letter,
+  type LetterType,
 } from "@/lib/everdear-api";
 
 type LetterWorkspaceProps = {
   user: AuthenticatedUser;
+  initialType?: LetterType | undefined;
   onSignOut: () => Promise<void>;
 };
 
@@ -80,6 +84,7 @@ function getTypeClasses(letter: Letter): string {
 
 export function LetterWorkspace({
   user,
+  initialType,
   onSignOut,
 }: LetterWorkspaceProps) {
   const [letters, setLetters] = useState<
@@ -90,7 +95,7 @@ export function LetterWorkspace({
     useState<Letter | null>(null);
 
   const [showNewLetter, setShowNewLetter] =
-    useState(false);
+    useState(initialType !== undefined);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<
@@ -213,6 +218,21 @@ export function LetterWorkspace({
         </div>
 
         <div className="flex flex-wrap gap-3">
+          {(user.role === "ADMIN" ||
+            user.role === "MODERATOR") && (
+            <Link
+              href="/admin/moderation"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-rose/30 bg-rose/10 px-5 text-sm font-bold text-rose-deep transition hover:border-rose/50 hover:bg-rose/15"
+            >
+              <ShieldCheck
+                aria-hidden="true"
+                className="h-4 w-4"
+              />
+
+              Moderation dashboard
+            </Link>
+          )}
+
           <button
             type="button"
             onClick={() =>
@@ -259,6 +279,7 @@ export function LetterWorkspace({
         letters.length === 0 ? (
         <NewLetterForm
           defaultSenderName={user.name}
+          initialType={initialType}
           onCreated={handleCreated}
           onCancel={
             letters.length > 0

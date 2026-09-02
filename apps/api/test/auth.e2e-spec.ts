@@ -186,7 +186,7 @@ describe('Authentication (e2e)', () => {
       .send({
         name: 'A',
         email: 'not-an-email',
-        password: 'too-short',
+        password: '1234',
         unexpectedField: true,
       })
       .expect(400);

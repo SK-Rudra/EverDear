@@ -262,7 +262,7 @@ export function AuthPanel({
                   required
                   type="password"
                   minLength={
-                    mode === "register" ? 15 : 1
+                    mode === "register" ? 5 : 1
                   }
                   maxLength={128}
                   value={password}
@@ -276,7 +276,7 @@ export function AuthPanel({
                   }
                   placeholder={
                     mode === "register"
-                      ? "At least 15 characters"
+                      ? "At least 5 characters"
                       : "Your password"
                   }
                   className="h-14 min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-sm text-foreground outline-none ring-0 placeholder:text-muted/60 focus:outline-none focus:ring-0"
@@ -285,8 +285,8 @@ export function AuthPanel({
 
               {mode === "register" && (
                 <span className="mt-2 block text-xs leading-5 text-muted">
-                  Use a memorable passphrase of at
-                  least 15 characters.
+                  Use at least 5 characters. A longer
+                  password is safer.
                 </span>
               )}
             </label>

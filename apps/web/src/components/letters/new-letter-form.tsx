@@ -20,8 +20,9 @@ import {
 
 type NewLetterFormProps = {
   defaultSenderName: string;
+  initialType?: LetterType | undefined;
   onCreated: (letter: Letter) => void;
-  onCancel?: () => void;
+  onCancel?: (() => void) | undefined;
 };
 
 type LetterOption = {
@@ -68,11 +69,14 @@ const letterOptions: LetterOption[] = [
 
 export function NewLetterForm({
   defaultSenderName,
+  initialType,
   onCreated,
   onCancel,
 }: NewLetterFormProps) {
   const [type, setType] =
-    useState<LetterType>("LOVED");
+    useState<LetterType>(
+      initialType ?? "LOVED",
+    );
 
   const [recipientName, setRecipientName] =
     useState("");

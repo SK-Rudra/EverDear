@@ -16,7 +16,6 @@ import {
   motion,
   useReducedMotion,
 } from "motion/react";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const navigation = [
   { label: "How it works", href: "#how-it-works" },
@@ -71,8 +70,6 @@ export function LandingHero() {
               <span className="absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-foreground transition-transform duration-300 group-hover:origin-left group-hover:scale-x-100" />
             </Link>
           ))}
-
-          <ThemeToggle />
 
           <Link
             href="/write"
@@ -135,13 +132,6 @@ export function LandingHero() {
                     {item.label}
                   </Link>
                 ))}
-
-                <div className="my-3 h-px bg-line" />
-
-                <div className="flex items-center justify-between rounded-2xl px-4 py-2">
-                  <span className="text-sm text-muted">Appearance</span>
-                  <ThemeToggle />
-                </div>
 
                 <Link
                   href="/write"

@@ -1,6 +1,9 @@
-import type { Metadata } from "next";
+import type {
+  Metadata,
+} from "next";
 import { LetterStudio } from "@/components/letters/letter-studio";
 import { SiteHeader } from "@/components/site/site-header";
+import type { LetterType } from "@/lib/everdear-api";
 
 export const metadata: Metadata = {
   title: "Write a letter",
@@ -8,7 +11,47 @@ export const metadata: Metadata = {
     "Create a private EverDear letter for someone who matters.",
 };
 
-export default function WriteLetterPage() {
+type WriteLetterPageProps = {
+  searchParams: Promise<{
+    type?: string | string[];
+  }>;
+};
+
+function resolveInitialType(
+  value: string | string[] | undefined,
+): LetterType | undefined {
+  const selectedValue = (
+    Array.isArray(value) ? value[0] : value
+  )
+    ?.trim()
+    .toLowerCase();
+
+  switch (selectedValue) {
+    case "loved":
+    case "love":
+      return "LOVED";
+
+    case "friend":
+    case "friends":
+      return "FRIEND";
+
+    case "family":
+      return "FAMILY";
+
+    default:
+      return undefined;
+  }
+}
+
+export default async function WriteLetterPage({
+  searchParams,
+}: WriteLetterPageProps) {
+  const parameters = await searchParams;
+
+  const initialType = resolveInitialType(
+    parameters.type,
+  );
+
   return (
     <>
       <SiteHeader />
@@ -26,7 +69,9 @@ export default function WriteLetterPage() {
         </div>
 
         <div className="relative z-10">
-          <LetterStudio />
+          <LetterStudio
+            initialType={initialType}
+          />
         </div>
       </main>
     </>

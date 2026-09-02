@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "@/components/theme/theme-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,16 +19,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    {
-      media: "(prefers-color-scheme: light)",
-      color: "#17151a",
-    },
-    {
-      media: "(prefers-color-scheme: dark)",
-      color: "#f7f0e8",
-    },
-  ],
+  themeColor: "#f7f3ee",
 };
 
 export default function RootLayout({
@@ -38,15 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className={inter.variable}>
-        <ThemeProvider>
-          <a href="#main-content" className="skip-link">
-            Skip to content
-          </a>
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
 
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

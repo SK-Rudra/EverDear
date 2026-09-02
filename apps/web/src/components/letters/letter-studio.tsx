@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -12,6 +11,7 @@ import {
   apiRequest,
   type AuthenticatedUser,
   type AuthenticationResponse,
+  type LetterType,
 } from "@/lib/everdear-api";
 
 type StudioStatus =
@@ -61,7 +61,13 @@ async function checkCurrentSession(): Promise<SessionCheckResult> {
   }
 }
 
-export function LetterStudio() {
+type LetterStudioProps = {
+  initialType?: LetterType | undefined;
+};
+
+export function LetterStudio({
+  initialType,
+}: LetterStudioProps) {
   const [status, setStatus] =
     useState<StudioStatus>("loading");
 
@@ -172,6 +178,7 @@ export function LetterStudio() {
   return (
     <LetterWorkspace
       user={user}
+      initialType={initialType}
       onSignOut={handleSignOut}
     />
   );

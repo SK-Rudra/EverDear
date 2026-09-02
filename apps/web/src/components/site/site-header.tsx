@@ -12,7 +12,6 @@ import {
   motion,
   useReducedMotion,
 } from "motion/react";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const navigation = [
   {
@@ -65,8 +64,6 @@ export function SiteHeader() {
             <span className="absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-foreground transition-transform duration-300 group-hover:origin-left group-hover:scale-x-100" />
           </Link>
         ))}
-
-        <ThemeToggle />
 
         <Link
           href="/write"
@@ -140,21 +137,13 @@ export function SiteHeader() {
                 </Link>
               ))}
 
-              <div className="my-3 h-px bg-line" />
-
-              <div className="flex items-center justify-between rounded-2xl px-4 py-2">
-                <span className="text-sm text-muted">
-                  Appearance
-                </span>
-                <ThemeToggle />
-              </div>
-
               <Link
                 href="/write"
                 onClick={() => setMenuOpen(false)}
                 className="mt-3 inline-flex min-h-[50px] items-center justify-center gap-2 rounded-2xl bg-foreground px-5 text-sm font-bold text-background"
               >
                 Write a letter
+
                 <ArrowRight
                   aria-hidden="true"
                   className="h-4 w-4"
