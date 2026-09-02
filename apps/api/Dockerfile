@@ -55,14 +55,7 @@ USER node
 
 WORKDIR /app/apps/api
 
-CMD [
-  "npx",
-  "prisma",
-  "migrate",
-  "deploy",
-  "--config",
-  "prisma7.config.ts"
-]
+CMD ["npx", "prisma", "migrate", "deploy", "--config", "prisma7.config.ts"]
 
 
 FROM ${NODE_IMAGE} AS runtime
