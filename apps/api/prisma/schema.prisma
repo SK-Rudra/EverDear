@@ -64,6 +64,16 @@ enum ReportStatus {
   ACTIONED
 }
 
+enum ModerationActionType {
+  MESSAGE_PUBLISHED
+  MESSAGE_HIDDEN
+  MESSAGE_RESTORED
+  MESSAGE_REMOVED
+  REPORT_REVIEWED
+  REPORT_DISMISSED
+  REPORT_ACTIONED
+}
+
 model User {
   id              String    @id @default(uuid()) @db.Uuid
   name            String    @db.VarChar(100)
@@ -80,6 +90,7 @@ model User {
   publicMessages  PublicMessage[]
   reportsMade     Report[]        @relation("ReportReporter")
   reportsResolved Report[]        @relation("ReportResolver")
+  moderationLogs  ModerationLog[]
 
   @@index([createdAt])
   @@map("users")
@@ -184,8 +195,9 @@ model PublicMessage {
   createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  reports Report[]
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  reports        Report[]
+  moderationLogs ModerationLog[]
 
   @@index([status, publishedAt])
   @@index([userId, createdAt])
@@ -206,13 +218,36 @@ model Report {
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  message  PublicMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  reporter User?         @relation("ReportReporter", fields: [reporterUserId], references: [id], onDelete: SetNull)
-  resolver User?         @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  message        PublicMessage   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  reporter       User?           @relation("ReportReporter", fields: [reporterUserId], references: [id], onDelete: SetNull)
+  resolver       User?           @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  moderationLogs ModerationLog[]
 
   @@unique([messageId, reporterUserId])
   @@unique([messageId, reporterHash])
   @@index([messageId, status])
   @@index([status, createdAt])
   @@map("reports")
+}
+
+model ModerationLog {
+  id            String               @id @default(uuid()) @db.Uuid
+  actorUserId   String?              @map("actor_user_id") @db.Uuid
+  messageId     String?              @map("message_id") @db.Uuid
+  reportId      String?              @map("report_id") @db.Uuid
+  action        ModerationActionType
+  note          String?              @db.VarChar(500)
+  previousState String?              @map("previous_state") @db.VarChar(40)
+  nextState     String?              @map("next_state") @db.VarChar(40)
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  actor   User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  message PublicMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  report  Report?        @relation(fields: [reportId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt])
+  @@index([messageId, createdAt])
+  @@index([reportId, createdAt])
+  @@index([action, createdAt])
+  @@map("moderation_logs")
 }

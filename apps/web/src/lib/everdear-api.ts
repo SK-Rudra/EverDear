@@ -153,6 +153,115 @@ export type PublicReportResponse = {
   accepted: true;
 };
 
+export type PublicMessageStatus =
+  | "PENDING"
+  | "PUBLISHED"
+  | "HIDDEN"
+  | "REMOVED"
+  | "EXPIRED";
+
+export type ModerationReportStatus =
+  | "PENDING"
+  | "REVIEWED"
+  | "DISMISSED"
+  | "ACTIONED";
+
+export type ModerationActionType =
+  | "MESSAGE_PUBLISHED"
+  | "MESSAGE_HIDDEN"
+  | "MESSAGE_RESTORED"
+  | "MESSAGE_REMOVED"
+  | "REPORT_REVIEWED"
+  | "REPORT_DISMISSED"
+  | "REPORT_ACTIONED";
+
+export type ModerationReport = {
+  id: string;
+  reason: PublicReportReason;
+  details: string | null;
+  status: ModerationReportStatus;
+  createdAt: string;
+  resolvedAt: string | null;
+  resolver: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+};
+
+export type ModerationMessage = {
+  id: string;
+  content: string;
+  displayLocation: string | null;
+  status: PublicMessageStatus;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  reportCount: number;
+  pendingReportCount: number;
+  reports: ModerationReport[];
+};
+
+export type ModerationMessagePage = {
+  messages: ModerationMessage[];
+  nextCursor: string | null;
+};
+
+export type ModerationOverview = {
+  messages: {
+    pending: number;
+    published: number;
+    hidden: number;
+    removed: number;
+    expired: number;
+  };
+  reports: {
+    pending: number;
+    reviewed: number;
+    dismissed: number;
+    actioned: number;
+  };
+};
+
+export type ModerationHistory = {
+  id: string;
+  action: ModerationActionType;
+  note: string | null;
+  previousState: string | null;
+  nextState: string | null;
+  createdAt: string;
+  actor: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+  message: {
+    id: string;
+    content: string;
+  } | null;
+  report: {
+    id: string;
+    reason: PublicReportReason;
+  } | null;
+};
+
+export type ModerationHistoryPage = {
+  history: ModerationHistory[];
+  nextCursor: string | null;
+};
+
+export type ModerationMessageAction =
+  | "PUBLISH"
+  | "HIDE"
+  | "RESTORE"
+  | "REMOVE";
+
+export type ModerationReportResolution =
+  | "REVIEWED"
+  | "DISMISSED"
+  | "ACTIONED";
+
 export type CreateLetterInput = {
   type: LetterType;
   recipientName: string;
@@ -263,7 +372,10 @@ export async function apiRequest<T>(
 
   const headers = new Headers(providedHeaders);
 
-  headers.set("Accept", "application/json");
+  headers.set(
+    "Accept",
+    "application/json",
+  );
 
   if (json !== undefined) {
     headers.set(

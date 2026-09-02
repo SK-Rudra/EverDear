@@ -3,6 +3,7 @@ import { AuthCookieService } from './auth-cookie.service.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { PasswordService } from './password.service.js';
+import { RoleAuthGuard } from './role-auth.guard.js';
 import { SessionAuthGuard } from './session-auth.guard.js';
 import { SessionService } from './session.service.js';
 import { SessionTokenService } from './session-token.service.js';
@@ -16,11 +17,13 @@ import { SessionTokenService } from './session-token.service.js';
     SessionTokenService,
     SessionService,
     SessionAuthGuard,
+    RoleAuthGuard,
   ],
   exports: [
     AuthCookieService,
     SessionAuthGuard,
     SessionService,
+    RoleAuthGuard,
   ],
 })
 export class AuthModule {}

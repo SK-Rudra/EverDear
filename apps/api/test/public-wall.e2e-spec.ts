@@ -26,6 +26,13 @@ describe('Public Wall (e2e)', () => {
   const originalPublicWallSecret =
     process.env.PUBLIC_WALL_HASH_SECRET;
 
+  const testMessageContents = [
+    'Some words become lighter when we leave them somewhere gentle.',
+    'I hope tomorrow meets you with kindness.',
+    'A quiet reminder that you have already survived difficult days.',
+    'This message has reached the end of its public life.',
+  ];
+
   beforeAll(async () => {
     const testDatabaseUrl =
       process.env.TEST_DATABASE_URL;
@@ -53,11 +60,23 @@ describe('Public Wall (e2e)', () => {
 
     prisma = app.get(PrismaService);
 
-    await prisma.publicMessage.deleteMany();
+    await prisma.publicMessage.deleteMany({
+      where: {
+        content: {
+          in: testMessageContents,
+        },
+      },
+    });
   });
 
   afterAll(async () => {
-    await prisma.publicMessage.deleteMany();
+    await prisma.publicMessage.deleteMany({
+      where: {
+        content: {
+          in: testMessageContents,
+        },
+      },
+    });
 
     await app.close();
 
