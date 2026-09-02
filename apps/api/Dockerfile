@@ -19,7 +19,13 @@ FROM install AS builder
 
 COPY apps/api ./apps/api
 
-RUN npm run build --workspace=api
+WORKDIR /app/apps/api
+
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/everdear_build?schema=public" \
+    npx prisma generate \
+      --config prisma7.config.ts
+
+RUN npm run build
 
 
 FROM ${NODE_IMAGE} AS production-dependencies
