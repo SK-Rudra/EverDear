@@ -1,0 +1,65 @@
+name: Production container build
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "fix/**"
+    paths:
+      - "apps/api/**"
+      - "apps/web/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".dockerignore"
+      - ".github/workflows/container-build.yml"
+
+  pull_request:
+    paths:
+      - "apps/api/**"
+      - "apps/web/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".dockerignore"
+      - ".github/workflows/container-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: containers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build production containers
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Build web container
+        run: |
+          docker build \
+            --file apps/web/Dockerfile \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.everdear.example/api/v1 \
+            --tag everdear-web:ci \
+            .
+
+      - name: Build API runtime container
+        run: |
+          docker build \
+            --file apps/api/Dockerfile \
+            --target runtime \
+            --tag everdear-api:ci \
+            .
+
+      - name: Build database migrator container
+        run: |
+          docker build \
+            --file apps/api/Dockerfile \
+            --target migrator \
+            --tag everdear-migrator:ci \
+            .
