@@ -1,0 +1,102 @@
+name: Continuous integration
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "fix/**"
+
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate EverDear
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: everdear_ci
+          POSTGRES_PASSWORD: everdear_ci_password
+          POSTGRES_DB: everdear_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd
+          "pg_isready -U everdear_ci -d everdear_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      CI: true
+      DATABASE_URL: postgresql://everdear_ci:everdear_ci_password@localhost:5432/everdear_test?schema=public
+      TEST_DATABASE_URL: postgresql://everdear_ci:everdear_ci_password@localhost:5432/everdear_test?schema=public
+
+      PORT: 4000
+      WEB_ORIGIN: http://localhost:3000
+      TRUST_PROXY_HOPS: 0
+
+      AUTH_IP_HASH_SECRET: ci-auth-ip-hash-secret-with-at-least-32-characters
+      PUBLIC_WALL_HASH_SECRET: ci-public-wall-secret-with-at-least-32-characters
+
+      MEDIA_STORAGE_DRIVER: local
+      MEDIA_STORAGE_ROOT: /tmp/everdear-media
+
+      NEXT_PUBLIC_API_URL: https://api.everdear.example/api/v1
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: apps/api
+        run: >
+          npx prisma generate
+          --config prisma7.config.ts
+
+      - name: Apply database migrations
+        working-directory: apps/api
+        run: >
+          npx prisma migrate deploy
+          --config prisma7.config.ts
+
+      - name: Verify migration status
+        working-directory: apps/api
+        run: >
+          npx prisma migrate status
+          --config prisma7.config.ts
+
+      - name: Run lint checks
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Run API end-to-end tests
+        run: npm run test:e2e --workspace=api
+
+      - name: Build production applications
+        env:
+          NODE_ENV: production
+        run: npm run build
