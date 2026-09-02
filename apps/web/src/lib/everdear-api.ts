@@ -127,6 +127,32 @@ export type CreatedShareLinkResponse =
     token: string;
   };
 
+export type PublicWallMessage = {
+  id: string;
+  content: string;
+  displayLocation: string | null;
+  publishedAt: string;
+  expiresAt: string;
+};
+
+export type PublicWallPage = {
+  messages: PublicWallMessage[];
+  nextCursor: string | null;
+};
+
+export type PublicReportReason =
+  | "SPAM"
+  | "HARASSMENT"
+  | "HATEFUL_CONTENT"
+  | "SEXUAL_CONTENT"
+  | "PERSONAL_INFORMATION"
+  | "SELF_HARM"
+  | "OTHER";
+
+export type PublicReportResponse = {
+  accepted: true;
+};
+
 export type CreateLetterInput = {
   type: LetterType;
   recipientName: string;

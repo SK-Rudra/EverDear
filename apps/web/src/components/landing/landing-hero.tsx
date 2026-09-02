@@ -21,7 +21,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 const navigation = [
   { label: "How it works", href: "#how-it-works" },
   { label: "Letters", href: "#letters" },
-  { label: "The Wall", href: "#wall" },
+  { label: "The Wall", href: "/wall" },
 ];
 
 export function LandingHero() {

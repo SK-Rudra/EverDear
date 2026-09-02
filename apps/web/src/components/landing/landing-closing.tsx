@@ -470,7 +470,7 @@ export function SiteFooter() {
             </Link>
 
             <Link
-              href="#wall"
+              href="/wall"
               className="transition-colors hover:text-foreground"
             >
               The Wall

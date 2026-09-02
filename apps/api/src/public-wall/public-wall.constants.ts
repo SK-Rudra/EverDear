@@ -1,0 +1,32 @@
+export const PUBLIC_MESSAGE_MIN_LENGTH = 3;
+export const PUBLIC_MESSAGE_MAX_LENGTH = 500;
+export const PUBLIC_LOCATION_MAX_LENGTH = 80;
+
+export const PUBLIC_MESSAGE_LIFETIME_DAYS = 30;
+
+export const PUBLIC_MESSAGE_RATE_LIMIT = 3;
+export const PUBLIC_MESSAGE_RATE_WINDOW_MINUTES =
+  15;
+
+export const PUBLIC_REPORT_RATE_LIMIT = 10;
+export const PUBLIC_REPORT_RATE_WINDOW_MINUTES =
+  60;
+
+export const PUBLIC_REPORT_AUTO_HIDE_THRESHOLD =
+  3;
+
+export const PUBLIC_WALL_DEFAULT_PAGE_SIZE = 18;
+export const PUBLIC_WALL_MAX_PAGE_SIZE = 48;
+
+export const PUBLIC_REPORT_REASONS = [
+  'SPAM',
+  'HARASSMENT',
+  'HATEFUL_CONTENT',
+  'SEXUAL_CONTENT',
+  'PERSONAL_INFORMATION',
+  'SELF_HARM',
+  'OTHER',
+] as const;
+
+export type PublicReportReason =
+  (typeof PUBLIC_REPORT_REASONS)[number];

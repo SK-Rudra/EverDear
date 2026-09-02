@@ -25,7 +25,7 @@ const navigation = [
   },
   {
     label: "The Wall",
-    href: "/#wall",
+    href: "/wall",
   },
 ];
 
