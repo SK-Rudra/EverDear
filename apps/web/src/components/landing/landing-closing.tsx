@@ -316,18 +316,18 @@ export function LandingClosing() {
                     repeat: Number.POSITIVE_INFINITY,
                     ease: "easeInOut",
                   }}
-                  className={`relative min-h-72 rounded-[1.8rem] border border-black/10 p-7 shadow-[0_24px_60px_rgba(54,40,44,0.1)] sm:p-8 ${item.rotation} ${item.surface}`}
+                  className={`relative flex h-full min-h-72 flex-col rounded-[1.8rem] border border-black/10 p-7 shadow-[0_24px_60px_rgba(54,40,44,0.1)] sm:p-8 ${item.rotation} ${item.surface}`}
                 >
                   <Quote
                     aria-hidden="true"
                     className="h-7 w-7 fill-rose-deep/10 text-rose-deep"
                   />
 
-                  <p className="mt-8 font-display text-3xl font-semibold leading-[1.12]">
+                  <p className="mt-8 pb-8 font-display text-3xl font-semibold leading-[1.12]">
                     {item.message}
                   </p>
 
-                  <div className="absolute bottom-7 left-7 right-7 flex items-center justify-between border-t border-black/10 pt-4 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-black/40 sm:left-8 sm:right-8">
+                  <div className="mt-auto flex shrink-0 items-center justify-between gap-4 border-t border-black/10 pt-4 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-black/40">
                     <span>Anonymous</span>
                     <span>{item.time}</span>
                   </div>

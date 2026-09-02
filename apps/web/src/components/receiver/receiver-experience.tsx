@@ -300,6 +300,53 @@ export function ReceiverExperience({
               getContentUrl={getContentUrl}
             />
 
+            {publicToken && (
+              <section
+                aria-labelledby="recipient-invitation-title"
+                className="mx-auto mt-12 w-full max-w-4xl rounded-[2rem] border border-current/15 bg-white/55 p-6 text-center shadow-[0_25px_80px_rgba(45,35,40,0.12)] backdrop-blur-xl sm:p-10"
+              >
+                <span className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-current/15 bg-white/60 shadow-sm">
+                  <ThemeIcon
+                    type={letter.type}
+                    className="h-5 w-5"
+                  />
+                </span>
+
+                <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] opacity-55">
+                  Your turn to write
+                </p>
+
+                <h2
+                  id="recipient-invitation-title"
+                  className="mx-auto mt-3 max-w-2xl font-display text-4xl font-bold tracking-[-0.04em] sm:text-5xl"
+                >
+                  Pass the feeling forward.
+                </h2>
+
+                <p className="mx-auto mt-4 max-w-xl text-sm leading-7 opacity-65 sm:text-base">
+                  Someone chose meaningful words for you.
+                  Create a private EverDear letter for
+                  someone who matters to you.
+                </p>
+
+                <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                  <Link
+                    href="/write"
+                    className={`inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-bold transition duration-300 hover:-translate-y-0.5 ${theme.buttonClass}`}
+                  >
+                    Create your own letter
+                  </Link>
+
+                  <Link
+                    href="/"
+                    className="inline-flex min-h-12 items-center justify-center rounded-full border border-current/15 bg-white/40 px-6 text-sm font-bold transition hover:bg-white/65"
+                  >
+                    Explore EverDear
+                  </Link>
+                </div>
+              </section>
+            )}
+
             <button
               type="button"
               onClick={() => setOpened(false)}
