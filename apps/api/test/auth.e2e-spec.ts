@@ -9,7 +9,7 @@ import {
   expect,
   it,
 } from 'vitest';
-import { AppModule } from '../src/app.module.js';
+
 import { configureApp } from '../src/app.setup.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
@@ -33,6 +33,10 @@ describe('Authentication (e2e)', () => {
     }
 
     process.env.DATABASE_URL = testDatabaseUrl;
+
+    const { AppModule } = await import(
+      '../src/app.module.js'
+    );
 
     const moduleFixture: TestingModule =
       await Test.createTestingModule({

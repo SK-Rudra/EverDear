@@ -12,7 +12,7 @@ import {
   expect,
   it,
 } from 'vitest';
-import { AppModule } from '../src/app.module.js';
+
 import { configureApp } from '../src/app.setup.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
@@ -46,6 +46,10 @@ describe('Public Wall (e2e)', () => {
     process.env.DATABASE_URL = testDatabaseUrl;
     process.env.PUBLIC_WALL_HASH_SECRET =
       'everdear-public-wall-e2e-secret-with-more-than-32-characters';
+
+    const { AppModule } = await import(
+      '../src/app.module.js'
+    );
 
     const moduleFixture: TestingModule =
       await Test.createTestingModule({

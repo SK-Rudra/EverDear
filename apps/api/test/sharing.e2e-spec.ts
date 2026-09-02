@@ -15,7 +15,7 @@ import {
   expect,
   it,
 } from 'vitest';
-import { AppModule } from '../src/app.module.js';
+
 import { configureApp } from '../src/app.setup.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
@@ -61,6 +61,10 @@ describe('Private letter sharing (e2e)', () => {
     process.env.DATABASE_URL = testDatabaseUrl;
     process.env.MEDIA_STORAGE_ROOT =
       testStorageRoot;
+
+    const { AppModule } = await import(
+      '../src/app.module.js'
+    );
 
     const moduleFixture: TestingModule =
       await Test.createTestingModule({

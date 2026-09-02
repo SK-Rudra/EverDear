@@ -4,22 +4,68 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import { parseWebOrigins } from './config/environment.js';
+
+type ExpressSettings = {
+  set(
+    setting: string,
+    value: number,
+  ): void;
+};
 
 export function configureApp(
   app: INestApplication,
   configService: ConfigService,
-) {
-  const webOrigin = configService.get<string>(
-    'WEB_ORIGIN',
-    'http://localhost:3000',
+): void {
+  const nodeEnvironment =
+    configService.getOrThrow<string>(
+      'NODE_ENV',
+    );
+
+  const webOrigins = parseWebOrigins(
+    configService.getOrThrow<string>(
+      'WEB_ORIGIN',
+    ),
   );
 
+  const trustProxyHops =
+    configService.getOrThrow<number>(
+      'TRUST_PROXY_HOPS',
+    );
+
+  if (trustProxyHops > 0) {
+    const expressApplication = app
+      .getHttpAdapter()
+      .getInstance() as ExpressSettings;
+
+    expressApplication.set(
+      'trust proxy',
+      trustProxyHops,
+    );
+  }
+
   app.setGlobalPrefix('api/v1');
+
+  app.use(
+    nodeEnvironment === 'production'
+      ? helmet({
+          crossOriginResourcePolicy: {
+            policy: 'cross-origin',
+          },
+        })
+      : helmet({
+          crossOriginResourcePolicy: {
+            policy: 'cross-origin',
+          },
+          strictTransportSecurity: false,
+        }),
+  );
 
   app.use(cookieParser());
 
   app.enableCors({
-    origin: webOrigin,
+    origin: webOrigins,
     credentials: true,
     methods: [
       'GET',
@@ -29,6 +75,17 @@ export function configureApp(
       'DELETE',
       'OPTIONS',
     ],
+    allowedHeaders: [
+      'Accept',
+      'Content-Type',
+      'Range',
+    ],
+    exposedHeaders: [
+      'Accept-Ranges',
+      'Content-Length',
+      'Content-Range',
+    ],
+    maxAge: 86_400,
   });
 
   app.useGlobalPipes(

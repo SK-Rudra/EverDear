@@ -22,9 +22,7 @@ import {
   type MediaObject,
   type PutMediaObjectInput,
 } from './media-storage.js';
-
-const STORAGE_KEY_PATTERN =
-  /^[a-zA-Z0-9][a-zA-Z0-9/._-]*$/;
+import { assertMediaStorageKey } from './media-storage-key.js';
 
 @Injectable()
 export class LocalMediaStorageService
@@ -94,12 +92,7 @@ export class LocalMediaStorageService
   private resolveStorageKey(
     storageKey: string,
   ): string {
-    if (
-      !STORAGE_KEY_PATTERN.test(storageKey) ||
-      storageKey.includes('..')
-    ) {
-      throw new Error('Invalid media storage key.');
-    }
+    assertMediaStorageKey(storageKey);
 
     const absolutePath = resolve(
       this.rootDirectory,
