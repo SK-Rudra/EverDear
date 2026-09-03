@@ -1,440 +1,294 @@
-<div align="center">
-
 # 💌 EverDear
 
-### Write what matters. Share it beautifully. Keep it forever.
+**Write what matters. Share it beautifully. Keep it forever.**
 
-EverDear is a full-stack digital letter-writing platform for creating beautiful private letters with photos and videos, sharing them through secure links, and posting anonymous messages on a moderated public wall.
+A full-stack, privacy-first digital correspondence platform. Compose rich personal letters with multimedia attachments, share them through cryptographic single-use links, or broadcast anonymous thoughts on a moderated public canvas.
 
-[![Continuous Integration](https://github.com/SK-Rudra/EverDear/actions/workflows/ci.yml/badge.svg)](https://github.com/SK-Rudra/EverDear/actions/workflows/ci.yml)
-[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-12-E0234E?style=flat-square&logo=nestjs)](https://nestjs.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Full_Stack-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-
-[**Open EverDear**](https://everdear-web.vercel.app) ·
-[**API Health**](https://everdear-api.onrender.com/api/v1/health/live) ·
-[**Readiness Check**](https://everdear-api.onrender.com/api/v1/health/ready)
-
-</div>
+[Explore Architecture](#-system-architecture) • [Key Features](#-core-capabilities) • [Quick Start](#-getting-started) • [API Reference](#-health--monitoring) • [Security Model](#-security--defense-in-depth)
 
 ---
 
-## About EverDear
+## 🧭 Overview
 
-EverDear brings the emotional experience of traditional letters into a modern, secure, and visually expressive web application.
+Traditional messaging apps optimize for speed and ephemeral consumption. **EverDear** reclaims intentionality, giving long-form digital writing the ceremony and permanence of paper correspondence.
 
-A user can write a letter for a loved one, friend, or family member, attach meaningful photos or videos, preview the recipient experience, and create a private link. The recipient can open that link without creating an account.
+* **Frictionless Recipient Experience:** Recipients view letters through cryptographically hashed access tokens without having to sign up or log in.
+* **Granular Ownership:** Authors maintain full control—edit drafts, revoke access tokens, or trigger permanent cryptographic shredding at any time.
+* **Community Commons:** An anonymous public wall running on privacy-preserving author hashing, protected by moderation tooling and automated TTL expiries.
 
-EverDear also includes an anonymous public wall where visitors can share short messages. Reports, moderation tools, role-based permissions, and audit history help keep the community safe.
+---
 
-> EverDear was inspired by World Letter Day and the idea that meaningful words deserve a thoughtful digital home.
+## ⚡ Core Capabilities
 
-## Live application
+### ✉️ Private Correspondence
 
-| Service | Address | Hosting |
-| --- | --- | --- |
-| Web application | [everdear-web.vercel.app](https://everdear-web.vercel.app) | Vercel |
-| Production API | [everdear-api.onrender.com](https://everdear-api.onrender.com/api/v1/health/live) | Render |
-| PostgreSQL | Private managed database | Supabase |
-| Media storage | Private S3-compatible bucket | Supabase Storage |
+* **Thematic Canvas:** Contextual themes tailored for romantic, platonic, and familial messages.
+* **Draft Engine:** Real-time auto-saving with dedicated recipient, sender, and envelope fields.
+* **Immutability Flags:** Explicit post-publish read-only locking prevents unintended tampering.
+* **Recipient Simulation:** In-app sandbox to preview the exact letter viewport prior to publishing.
 
-> The API currently uses free hosting and may require a short cold start after a period of inactivity.
+### 🔐 Zero-Friction Sharing
 
-## Features
+* **Token Hashing:** Raw access tokens are never persisted; only constant-time hashes are stored.
+* **Granular Expiration:** Configurable temporal limits, view caps, and instant revocation hooks.
+* **Telemetry Insights:** Transparent logs tracking first view timestamp, latest view, and aggregate reads.
+* **Cascade Deletion:** Destroying a letter immediately purges associated keys, metadata, and media.
 
-### Private letters
+### 🖼️ Secure Media Pipeline
 
-- Create personal digital letters
-- Loved, Friend, and Family visual themes
-- Automatic draft saving
-- Dedicated recipient and sender fields
-- Private recipient preview
-- Read-only protection after publishing
-- Permanent owner-controlled deletion
+* **Byte-Signature Validation:** Server-side magic-number verification protects against MIME spoofing.
+* **Object Isolation:** Media files route directly to private, S3-compatible Supabase buckets.
+* **Authenticated Streaming:** Protected media streams prevent hotlinking and unauthenticated scraping.
+* **Storage Pruning:** Automated hooks wipe linked object storage on attachment deletion.
 
-### Photos and videos
+### 🛡️ Moderated Public Wall
 
-- Upload image and video attachments
-- Server-side file signature and MIME validation
-- Configurable file-size and file-count limits
-- Private S3-compatible object storage
-- Authenticated media streaming
-- Automatic attachment cleanup after deletion
+* **Ephemeral Thoughts:** Ephemeral micro-letters on an anonymous public feed.
+* **Deterministic Privacy:** Irreversible salting ensures zero identity leaks while preserving spam detection.
+* **Staff Command Center:** Role-based audit panels for flagging, queue triage, and permanent removals.
+* **Report Escalation:** Built-in community flagging pipeline tied to moderator action logs.
 
-### Secure sharing
+---
 
-- Generate private recipient links
-- Store only hashed share tokens
-- Regenerate or revoke existing links
-- Optional link expiration
-- Track first view, latest view, and view count
-- Automatically invalidate links when letters are deleted
-
-### Anonymous public wall
-
-- Publish short anonymous messages
-- Paginated public message feed
-- Privacy-preserving author hashing
-- Community reporting
-- Automatic content expiration
-- Protected moderation workflows
-
-### Administration and moderation
-
-- Moderator and administrator roles
-- Review pending, published, hidden, and removed messages
-- Resolve community reports
-- Hide inappropriate content
-- Administrator-only permanent removal
-- Complete moderation audit history
-
-### Production readiness
-
-- Environment configuration validation
-- Liveness and database-readiness endpoints
-- PostgreSQL migration validation
-- Docker production images
-- Non-root container runtime
-- Automated lint, unit, E2E, build, and container checks
-- Vercel same-origin API proxy for secure browser sessions
-
-## Application architecture
+## 🏗 System Architecture
 
 ```mermaid
-flowchart TD
-    U["User browser"] --> W["Next.js web application on Vercel"]
-    W -->|"Same-origin /api/v1 proxy"| A["NestJS API on Render"]
-    A --> D[("Supabase PostgreSQL")]
-    A --> S["Private Supabase S3 storage"]
+flowchart LR
+    subgraph Client["Client Tier"]
+        U["User Device"]
+    end
+
+    subgraph Edge["Vercel Edge Platform"]
+        W["Next.js App Router"]
+        P["/api/v1 Proxy"]
+    end
+
+    subgraph Core["Compute Tier (Render)"]
+        A["NestJS Modular API"]
+        G["Auth & Role Guards"]
+    end
+
+    subgraph Data["Persistence Tier (Supabase)"]
+        D[("PostgreSQL 18")]
+        S["S3 Private Media Bucket"]
+    end
+
+    U -->|"HTTPS / Cookie Session"| W
+    W --> P
+    P -->|"Internal Upstream Route"| A
+    A --> G
+    G -->|"Prisma Client"| D
+    G -->|"AWS S3 SDK Stream"| S
 ```
 
-The browser communicates with `/api/v1` on the Vercel domain. Next.js securely proxies those requests to the Render API. This keeps authentication cookies on the same browser origin while the API independently accesses PostgreSQL and private media storage.
+> **Origin Security Pattern:** Browser traffic interacts strictly with the Vercel edge via `/api/v1`. Next.js proxies these calls to the upstream NestJS service on Render, preserving same-origin `SameSite=Lax` cookies across cross-domain infrastructures.
 
-## Technology stack
+---
 
-| Layer | Technologies |
-| --- | --- |
-| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
-| Interface | Motion, Lucide React, custom responsive design system |
-| Backend | NestJS 12, Express, TypeScript |
-| Database | PostgreSQL 18, Prisma ORM 7, Prisma PostgreSQL adapter |
-| Authentication | Secure HTTP-only cookies, Argon2 password hashing |
-| Validation | Zod, class-validator, class-transformer |
-| Media | Multer, file-type, AWS S3 SDK |
-| Security | Helmet, CORS, ownership guards, role guards |
-| Testing | Vitest, Supertest, NestJS Testing |
-| Quality | ESLint, Oxlint, Prettier |
-| Deployment | Vercel, Render, Supabase, Docker, GitHub Actions |
+## 🛠 Tech Stack
 
-## Repository structure
+| Layer | Technologies | Key Highlights |
+| :--- | :--- | :--- |
+| **Frontend** | Next.js 16 (App Router), React 19, TypeScript | Server Components, dynamic streaming, zero-layout-shift UI |
+| **Styling & UI** | Tailwind CSS 4, Motion, Lucide Icons | Fluid layout, accessible micro-interactions, responsive design |
+| **API Framework** | NestJS 12, Express | Decoupled feature modules, dependency injection, strict typing |
+| **ORM & Database** | Prisma 7, PostgreSQL 18 | Declarative schema, connection pooling, typed SQL migrations |
+| **Authentication** | HTTP-only Cookies, Argon2id | Session hardening, brute-force mitigation, IP hashing |
+| **Validation** | Zod, class-validator, file-type | Multi-tier input parsing and payload sanitization |
+| **Media Layer** | Multer, AWS S3 SDK, Supabase Storage | Multi-part uploads, authenticated asset streams |
+| **Quality** | Vitest, Supertest, ESLint, Oxlint | Deterministic end-to-end and integration suites |
+
+---
+
+## 📁 Repository Layout
 
 ```text
 EverDear/
-├── .github/
-│   └── workflows/              # CI and production build workflows
 ├── apps/
-│   ├── api/
-│   │   ├── prisma/             # Prisma schema and migrations
+│   ├── api/                  # Backend NestJS Application
+│   │   ├── prisma/           # Schema declarations & schema migrations
 │   │   ├── src/
-│   │   │   ├── auth/           # Authentication and authorization
-│   │   │   ├── config/         # Environment validation
-│   │   │   ├── letters/        # Letters, attachments, and sharing
-│   │   │   ├── media/          # Local and S3 media storage
-│   │   │   ├── moderation/     # Staff moderation workflows
-│   │   │   ├── prisma/         # Prisma service
-│   │   │   └── public-wall/    # Anonymous public messages
-│   │   ├── test/               # API E2E tests
-│   │   └── Dockerfile
-│   └── web/
-│       ├── src/
-│       │   ├── app/             # Next.js App Router pages
-│       │   ├── components/      # UI and feature components
-│       │   └── lib/             # API client and shared utilities
-│       └── Dockerfile
-├── docs/                        # Project documentation
-├── packages/                    # Shared workspace packages
-├── package.json                 # Monorepo scripts
-└── package-lock.json
+│   │   │   ├── auth/         # Cookie strategies, Argon2 hashing, guards
+│   │   │   ├── config/       # Zod schema environment validation
+│   │   │   ├── letters/      # Letter engine, token generation, media bindings
+│   │   │   ├── media/        # Local fs & S3 storage adapters
+│   │   │   ├── moderation/   # Moderation queues & administrative actions
+│   │   │   └── public-wall/  # Anonymized feed with hashing filters
+│   │   └── test/             # Supertest integration & E2E suite
+│   └── web/                  # Frontend Next.js Application
+│       └── src/
+│           ├── app/          # App Router pages and layouts
+│           ├── components/   # Atomic UI primitives & feature modules
+│           └── lib/          # Typed API clients and utility wrappers
+├── docs/                     # Architectural documentation & technical specs
+└── package.json              # Monorepo workspaces configuration
 ```
 
-## Getting started
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-Install the following software:
+Ensure the following runtimes and tools are installed locally:
 
-- Node.js 24
-- npm
-- PostgreSQL 18
-- Git
+* **Node.js:** `v24.x` or higher
+* **Package Manager:** `npm v10+`
+* **Database:** `PostgreSQL 18` (or local Docker instance)
+* **Git**
 
-Docker is optional for local development.
-
-### 1. Clone the repository
+### Installation
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/SK-Rudra/EverDear.git
 cd EverDear
-```
 
-### 2. Install dependencies
-
-```bash
+# 2. Install monorepo dependencies
 npm ci
-```
 
-### 3. Create the API environment file
-
-On macOS or Linux:
-
-```bash
+# 3. Provision local environment variables
 cp apps/api/.env.example apps/api/.env
 ```
 
-On Windows PowerShell:
+### Database Initialization
 
-```powershell
-Copy-Item `
-  .\apps\api\.env.example `
-  .\apps\api\.env
+Populate your connection strings in `apps/api/.env`:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/everdear_dev?schema=public"
+TEST_DATABASE_URL="postgresql://user:password@localhost:5432/everdear_test?schema=public"
+SHADOW_DATABASE_URL="postgresql://user:password@localhost:5432/everdear_shadow?schema=public"
 ```
 
-Update `apps/api/.env` with your local PostgreSQL credentials and secure development secrets.
-
-Never commit `.env` files or real credentials.
-
-### 4. Configure PostgreSQL
-
-Create development and test databases, then configure these values:
-
-```dotenv
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/everdear_dev?schema=public"
-TEST_DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/everdear_test?schema=public"
-SHADOW_DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/everdear_shadow?schema=public"
-```
-
-### 5. Generate Prisma Client
+Run migrations and generate the client:
 
 ```bash
-cd apps/api
-npx prisma generate --config prisma7.config.ts
-cd ../..
+# Run migrations using Prisma 7 configuration
+npm run --prefix apps/api prisma:migrate
+
+# Generate typed Prisma client
+npm run --prefix apps/api prisma:generate
 ```
 
-### 6. Apply database migrations
+### Development Server
 
-```bash
-cd apps/api
-npx prisma migrate deploy --config prisma7.config.ts
-cd ../..
-```
-
-### 7. Start the application
+Start both the frontend and backend concurrently:
 
 ```bash
 npm run dev
 ```
 
-The services will be available at:
-
-| Service | Local address |
-| --- | --- |
-| Web application | `http://localhost:3000` |
-| API | `http://localhost:4000/api/v1` |
-| API liveness | `http://localhost:4000/api/v1/health/live` |
-| API readiness | `http://localhost:4000/api/v1/health/ready` |
-
-## Environment variables
-
-### API variables
-
-| Variable | Purpose |
-| --- | --- |
-| `NODE_ENV` | Application environment |
-| `PORT` | API listening port |
-| `DATABASE_URL` | PostgreSQL runtime connection |
-| `TEST_DATABASE_URL` | Isolated E2E test database |
-| `SHADOW_DATABASE_URL` | Prisma development shadow database |
-| `WEB_ORIGIN` | Allowed frontend origins |
-| `TRUST_PROXY_HOPS` | Trusted reverse-proxy hop count |
-| `AUTH_IP_HASH_SECRET` | Secret used for authentication IP hashing |
-| `PUBLIC_WALL_HASH_SECRET` | Secret used for privacy-preserving wall hashes |
-| `MEDIA_STORAGE_DRIVER` | `local` for development or `s3` for production |
-| `MEDIA_STORAGE_ROOT` | Local media directory |
-| `S3_ENDPOINT` | S3-compatible storage endpoint |
-| `S3_REGION` | Storage region |
-| `S3_BUCKET` | Private media bucket name |
-| `S3_ACCESS_KEY_ID` | S3 access key |
-| `S3_SECRET_ACCESS_KEY` | S3 secret key |
-| `S3_FORCE_PATH_STYLE` | Enables path-style S3 requests when required |
-
-Generate different random values of at least 32 characters for the two hashing secrets.
-
-### Web variables
-
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_API_URL` | Browser-visible API base path |
-| `API_PROXY_TARGET` | Server-side production API target |
-
-Production Vercel configuration:
-
-```dotenv
-NEXT_PUBLIC_API_URL=/api/v1
-API_PROXY_TARGET=https://everdear-api.onrender.com
-```
-
-Do not add quotation marks around environment-variable values in hosting dashboards.
-
-## Available scripts
-
-Run these commands from the repository root.
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the web application and API together |
-| `npm run dev:web` | Start only the Next.js development server |
-| `npm run dev:api` | Start only the NestJS development server |
-| `npm run lint` | Run frontend and backend lint checks |
-| `npm run test` | Run API unit tests |
-| `npm run test:e2e --workspace=api` | Run API E2E tests |
-| `npm run build` | Build both production applications |
-
-Additional API commands:
-
-```bash
-npm run test:watch --workspace=api
-npm run test:cov --workspace=api
-npm run format --workspace=api
-```
-
-## Testing and quality assurance
-
-Run the complete local verification suite:
-
-```bash
-npm run lint
-npm run test
-npm run test:e2e --workspace=api
-npm run build
-```
-
-The E2E suite covers:
-
-- API health checks
-- Authentication lifecycle
-- Letter ownership and deletion
-- Attachment protection and streaming
-- Private link publishing, tracking, regeneration, and revocation
-- Anonymous wall publishing and reporting
-- Moderator and administrator authorization
-- Moderation decisions and audit logging
-
-GitHub Actions runs validation from a clean checkout with an isolated PostgreSQL service before changes are merged.
-
-## Security design
-
-EverDear applies defense in depth across the application:
-
-- Passwords are hashed with Argon2
-- Sessions use secure HTTP-only cookies
-- Production browser requests use a same-origin API proxy
-- Share tokens are stored as hashes
-- Database operations verify resource ownership
-- Moderation endpoints require explicit staff roles
-- Uploaded files are checked using detected file signatures
-- Private media is streamed through authorized API endpoints
-- Production configuration is strictly validated at startup
-- Security headers are applied through Helmet
-- Secrets are stored only in deployment environment variables
-- Runtime containers use a non-root user
-
-Security-sensitive values must never be committed, printed in logs, or placed inside `.env.example`.
-
-## Health monitoring
-
-The API exposes two health endpoints:
-
-| Endpoint | Purpose |
-| --- | --- |
-| `/api/v1/health/live` | Confirms that the API process is running |
-| `/api/v1/health/ready` | Confirms that the API and PostgreSQL are available |
-
-Deployment platforms should use the liveness route for process health checks. Use the readiness route when database availability must also be verified.
-
-## Deployment
-
-### Frontend
-
-The Next.js application is deployed to Vercel using `apps/web` as the project root.
-
-### API
-
-The NestJS application is deployed to Render using:
-
-- Runtime: Docker
-- Build context: repository root
-- Dockerfile: `apps/api/Dockerfile`
-- Health check: `/api/v1/health/live`
-- Production port: `4000`
-
-### Database and storage
-
-Supabase provides:
-
-- Managed PostgreSQL
-- A private S3-compatible media bucket
-- Session-mode database connectivity for Prisma migrations
-- Transaction-mode or session-mode connectivity for runtime use
-
-Apply new production migrations before deploying code that depends on them:
-
-```bash
-cd apps/api
-npx prisma migrate deploy --config prisma7.config.ts
-```
-
-## Contribution workflow
-
-1. Create a branch from the latest `main`.
-2. Make one focused change.
-3. Run linting, unit tests, E2E tests, and production builds.
-4. Push the branch.
-5. Open a pull request.
-6. Merge only after all required checks pass.
-
-Example:
-
-```bash
-git switch main
-git pull --ff-only origin main
-git switch -c feature/my-change
-```
-
-## Roadmap
-
-Potential future improvements include:
-
-- Custom production domain
-- Email verification
-- Password recovery
-- User account deletion
-- Self-service deletion of public-wall messages
-- Advanced media processing and thumbnails
-- Expanded observability and analytics
-- Native mobile experience
-
-## Author
-
-Created by [SK-Rudra](https://github.com/SK-Rudra).
-
-If EverDear inspires you, consider giving the repository a star.
+| Service | Address | Scope |
+| :--- | :--- | :--- |
+| **Web Frontend** | `http://localhost:3000` | User client, letter editor & wall |
+| **API Gateway** | `http://localhost:4000/api/v1` | Core REST services |
+| **API Liveness** | `http://localhost:4000/api/v1/health/live` | Process probe |
+| **API Readiness** | `http://localhost:4000/api/v1/health/ready` | Database connectivity probe |
 
 ---
 
-<div align="center">
+## 🔒 Security & Defense-in-Depth
 
-**EverDear — because meaningful words deserve more than a message bubble.**
+```text
+[ Incoming Request ]
+        │
+        ▼
+[ Helmet Headers (HSTS, CSP, X-Frame-Options) ]
+        │
+        ▼
+[ Origin Validation (CORS + Trusted Reverse-Proxy Hops) ]
+        │
+        ▼
+[ Secure Session Guard (HttpOnly, SameSite Cookies) ]
+        │
+        ▼
+[ Payload Sanitization (Zod / class-validator / MIME Signature) ]
+        │
+        ▼
+[ Resource Ownership Verification (Row-Level Security Check) ]
+        │
+        ▼
+[ Deterministic Data Layer (Argon2 / SHA-256 Hashed Secrets) ]
+```
 
-</div>
+* **Zero Plaintext Tokens:** Share tokens are passed once to the author. The database stores only SHA-256 digests.
+* **Header Hardening:** Helmet manages strict HTTP Strict Transport Security (HSTS) and anti-clickjacking headers.
+* **Strict Runtime Sandboxing:** Production Docker images run under low-privilege, non-root system users (`node:node`).
+* **Binary File Verification:** File inputs are analyzed via magic bytes using the `file-type` buffer analyzer, bypassing spoofed extensions.
+
+---
+
+## ⚙️ Configuration Reference
+
+<details>
+<summary>Click to view API Environment Variables</summary>
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `NODE_ENV` | `string` | `development` | Environment mode (`development` \| `production` \| `test`) |
+| `PORT` | `number` | `4000` | Port on which the API process binds |
+| `DATABASE_URL` | `string` | — | Connection URI for the main PostgreSQL cluster |
+| `TRUST_PROXY_HOPS` | `number` | `1` | Reverse proxy hop count for correct upstream IP detection |
+| `AUTH_IP_HASH_SECRET` | `string` | — | Cryptographic secret for hashing client authentication IPs |
+| `PUBLIC_WALL_HASH_SECRET` | `string` | — | Cryptographic secret for irreversible wall identity hashing |
+| `MEDIA_STORAGE_DRIVER` | `string` | `local` | Storage target (`local` for dev, `s3` for production) |
+| `S3_ENDPOINT` | `string` | — | Base endpoint URI for S3 / Supabase storage |
+| `S3_BUCKET` | `string` | — | Destination storage bucket identifier |
+| `S3_ACCESS_KEY_ID` | `string` | — | Storage access credential |
+| `S3_SECRET_ACCESS_KEY` | `string` | — | Storage secret credential |
+
+</details>
+
+<details>
+<summary>Click to view Web Frontend Variables</summary>
+
+| Parameter | Description | Production Example |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_API_URL` | Relative base path exposed to the browser | `/api/v1` |
+| `API_PROXY_TARGET` | Upstream API host used by the Next.js server proxy | `https://everdear-api.onrender.com` |
+
+</details>
+
+---
+
+## 🧪 Quality & Test Engineering
+
+The monorepo uses automated checks across code style, unit behavior, and end-to-end execution.
+
+```bash
+# Execute static analysis and style linting
+npm run lint
+
+# Execute isolated unit test suites
+npm run test
+
+# Execute end-to-end API integration tests
+npm run test:e2e --workspace=api
+
+# Run full monorepo build checks
+npm run build
+```
+
+---
+
+## 🗺 Product Roadmap
+
+- [ ] **Custom Domain Routing:** Dedicated domains for custom white-labeled letters.
+- [ ] **Account Recovery:** Self-serve email verification and password reset flows.
+- [ ] **Rich Media Transcoding:** Automated client-side compression and adaptive image thumbnailing.
+- [ ] **Expanded Observability:** OpenTelemetry traces and Prometheus metric scraping.
+- [ ] **Mobile Portability:** Progressive Web App (PWA) manifest support.
+
+---
+
+## 👤 Author
+
+**SK-Rudra**
+
+* GitHub: [@SK-Rudra](https://github.com/SK-Rudra)
+* Repository: [SK-Rudra/EverDear](https://github.com/SK-Rudra/EverDear)
+
+---
+
+Designed and built with care. If you find EverDear useful, please consider starring the repository.
