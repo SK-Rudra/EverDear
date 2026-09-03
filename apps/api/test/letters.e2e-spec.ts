@@ -2,13 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import {
-  afterAll,
-  beforeAll,
-  describe,
-  expect,
-  it,
-} from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { configureApp } from '../src/app.setup.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
@@ -19,34 +13,25 @@ describe('Letters (e2e)', () => {
 
   const originalDatabaseUrl = process.env.DATABASE_URL;
 
-  const firstUserEmail =
-    'letter-owner@everdear.test';
-  const secondUserEmail =
-    'letter-outsider@everdear.test';
+  const firstUserEmail = 'letter-owner@everdear.test';
+  const secondUserEmail = 'letter-outsider@everdear.test';
 
-  const testPassword =
-    'A secure EverDear letter passphrase 2026!';
+  const testPassword = 'A secure EverDear letter passphrase 2026!';
 
   beforeAll(async () => {
-    const testDatabaseUrl =
-      process.env.TEST_DATABASE_URL;
+    const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 
     if (!testDatabaseUrl) {
-      throw new Error(
-        'TEST_DATABASE_URL is not configured',
-      );
+      throw new Error('TEST_DATABASE_URL is not configured');
     }
 
     process.env.DATABASE_URL = testDatabaseUrl;
 
-    const { AppModule } = await import(
-      '../src/app.module.js'
-    );
+    const { AppModule } = await import('../src/app.module.js');
 
-    const moduleFixture: TestingModule =
-      await Test.createTestingModule({
-        imports: [AppModule],
-      }).compile();
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
 
     app = moduleFixture.createNestApplication();
 
@@ -59,10 +44,7 @@ describe('Letters (e2e)', () => {
     await prisma.user.deleteMany({
       where: {
         email: {
-          in: [
-            firstUserEmail,
-            secondUserEmail,
-          ],
+          in: [firstUserEmail, secondUserEmail],
         },
       },
     });
@@ -72,10 +54,7 @@ describe('Letters (e2e)', () => {
     await prisma.user.deleteMany({
       where: {
         email: {
-          in: [
-            firstUserEmail,
-            secondUserEmail,
-          ],
+          in: [firstUserEmail, secondUserEmail],
         },
       },
     });
@@ -83,21 +62,16 @@ describe('Letters (e2e)', () => {
     await app.close();
 
     if (originalDatabaseUrl) {
-      process.env.DATABASE_URL =
-        originalDatabaseUrl;
+      process.env.DATABASE_URL = originalDatabaseUrl;
     } else {
       delete process.env.DATABASE_URL;
     }
   });
 
   it('enforces authentication and letter ownership', async () => {
-    const ownerAgent = request.agent(
-      app.getHttpServer(),
-    );
+    const ownerAgent = request.agent(app.getHttpServer());
 
-    const outsiderAgent = request.agent(
-      app.getHttpServer(),
-    );
+    const outsiderAgent = request.agent(app.getHttpServer());
 
     const createLetterInput = {
       type: 'LOVED',
@@ -159,20 +133,15 @@ describe('Letters (e2e)', () => {
       .expect(200);
 
     expect(ownerListResponse.body).toHaveLength(1);
-    expect(ownerListResponse.body[0].id).toBe(
-      letterId,
-    );
+    expect(ownerListResponse.body[0].id).toBe(letterId);
 
-    const outsiderListResponse =
-      await outsiderAgent
-        .get('/api/v1/letters')
-        .expect(200);
+    const outsiderListResponse = await outsiderAgent
+      .get('/api/v1/letters')
+      .expect(200);
 
     expect(outsiderListResponse.body).toEqual([]);
 
-    await outsiderAgent
-      .get(`/api/v1/letters/${letterId}`)
-      .expect(404);
+    await outsiderAgent.get(`/api/v1/letters/${letterId}`).expect(404);
 
     await outsiderAgent
       .patch(`/api/v1/letters/${letterId}`)
@@ -203,10 +172,7 @@ describe('Letters (e2e)', () => {
       },
     });
 
-    await ownerAgent
-      .patch(`/api/v1/letters/${letterId}`)
-      .send({})
-      .expect(400);
+    await ownerAgent.patch(`/api/v1/letters/${letterId}`).send({}).expect(400);
 
     await ownerAgent
       .patch(`/api/v1/letters/${letterId}`)
@@ -215,7 +181,7 @@ describe('Letters (e2e)', () => {
       })
       .expect(400);
 
-    const lockedLetterResponse = await ownerAgent
+    const privateLetterResponse = await ownerAgent
       .post('/api/v1/letters')
       .send({
         type: 'FRIEND',
@@ -224,12 +190,11 @@ describe('Letters (e2e)', () => {
       })
       .expect(201);
 
-    const lockedLetterId =
-      lockedLetterResponse.body.id;
+    const privateLetterId = privateLetterResponse.body.id;
 
     await prisma.letter.update({
       where: {
-        id: lockedLetterId,
+        id: privateLetterId,
       },
       data: {
         status: 'READY',
@@ -237,26 +202,25 @@ describe('Letters (e2e)', () => {
     });
 
     await ownerAgent
-      .patch(
-        `/api/v1/letters/${lockedLetterId}`,
-      )
+      .patch(`/api/v1/letters/${privateLetterId}`)
       .send({
         title: 'This must not change',
       })
       .expect(409);
 
-    await ownerAgent
-      .delete(
-        `/api/v1/letters/${lockedLetterId}`,
-      )
-      .expect(409);
+    /*
+     * A private letter remains read-only, but its
+     * owner can permanently delete it.
+     */
+    await ownerAgent.delete(`/api/v1/letters/${privateLetterId}`).expect(204);
 
-    await ownerAgent
-      .delete(`/api/v1/letters/${letterId}`)
-      .expect(204);
+    await ownerAgent.get(`/api/v1/letters/${privateLetterId}`).expect(404);
 
-    await ownerAgent
-      .get(`/api/v1/letters/${letterId}`)
-      .expect(404);
+    /*
+     * Draft letters can also be deleted by their owner.
+     */
+    await ownerAgent.delete(`/api/v1/letters/${letterId}`).expect(204);
+
+    await ownerAgent.get(`/api/v1/letters/${letterId}`).expect(404);
   });
 });
