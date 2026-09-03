@@ -1,11 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertCircle,
@@ -34,11 +30,7 @@ type LetterEditorProps = {
   onDeleted: (letterId: string) => void;
 };
 
-type SaveState =
-  | "saved"
-  | "unsaved"
-  | "saving"
-  | "error";
+type SaveState = "saved" | "unsaved" | "saving" | "error";
 
 type ThemeOption = {
   type: LetterType;
@@ -52,22 +44,19 @@ const themeOptions: ThemeOption[] = [
     type: "LOVED",
     label: "Loved",
     icon: Heart,
-    activeClass:
-      "border-rose/50 bg-rose/15 text-rose",
+    activeClass: "border-rose/50 bg-rose/15 text-rose",
   },
   {
     type: "FRIEND",
     label: "Friend",
     icon: Users,
-    activeClass:
-      "border-blue/50 bg-blue/15 text-blue",
+    activeClass: "border-blue/50 bg-blue/15 text-blue",
   },
   {
     type: "FAMILY",
     label: "Family",
     icon: House,
-    activeClass:
-      "border-sage/50 bg-sage/15 text-sage",
+    activeClass: "border-sage/50 bg-sage/15 text-sage",
   },
 ];
 
@@ -89,33 +78,21 @@ export function LetterEditor({
 }: LetterEditorProps) {
   const isDraft = letter.status === "DRAFT";
 
-  const [type, setType] =
-    useState<LetterType>(letter.type);
+  const [type, setType] = useState<LetterType>(letter.type);
 
-  const [recipientName, setRecipientName] =
-    useState(letter.recipientName);
+  const [recipientName, setRecipientName] = useState(letter.recipientName);
 
-  const [senderName, setSenderName] = useState(
-    letter.senderName,
-  );
+  const [senderName, setSenderName] = useState(letter.senderName);
 
-  const [title, setTitle] = useState(
-    letter.title ?? "",
-  );
+  const [title, setTitle] = useState(letter.title ?? "");
 
-  const [body, setBody] = useState(
-    letter.content.body,
-  );
+  const [body, setBody] = useState(letter.content.body);
 
-  const [saveState, setSaveState] =
-    useState<SaveState>("saved");
+  const [saveState, setSaveState] = useState<SaveState>("saved");
 
-  const [saveError, setSaveError] = useState<
-    string | null
-  >(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [deleting, setDeleting] =
-    useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const initialSnapshot = JSON.stringify({
     type: letter.type,
@@ -127,17 +104,13 @@ export function LetterEditor({
     },
   });
 
-  const savedSnapshotRef = useRef(
-    initialSnapshot,
-  );
+  const savedSnapshotRef = useRef(initialSnapshot);
 
   const namesComplete =
-    recipientName.trim().length > 0 &&
-    senderName.trim().length > 0;
+    recipientName.trim().length > 0 && senderName.trim().length > 0;
 
   const previewReady =
-    namesComplete &&
-    (isDraft ? saveState === "saved" : true);
+    namesComplete && (isDraft ? saveState === "saved" : true);
 
   useEffect(() => {
     if (!isDraft) {
@@ -154,40 +127,33 @@ export function LetterEditor({
       },
     };
 
-    const currentSnapshot =
-      JSON.stringify(updateInput);
+    const currentSnapshot = JSON.stringify(updateInput);
 
     if (
-      currentSnapshot ===
-        savedSnapshotRef.current ||
+      currentSnapshot === savedSnapshotRef.current ||
       !recipientName.trim() ||
       !senderName.trim()
     ) {
       return;
     }
 
-    const abortController =
-      new AbortController();
+    const abortController = new AbortController();
 
     const timer = window.setTimeout(() => {
       setSaveState("saving");
       setSaveError(null);
 
-      void apiRequest<Letter>(
-        `/letters/${letter.id}`,
-        {
-          method: "PATCH",
-          json: updateInput,
-          signal: abortController.signal,
-        },
-      )
+      void apiRequest<Letter>(`/letters/${letter.id}`, {
+        method: "PATCH",
+        json: updateInput,
+        signal: abortController.signal,
+      })
         .then((updatedLetter) => {
           if (abortController.signal.aborted) {
             return;
           }
 
-          savedSnapshotRef.current =
-            currentSnapshot;
+          savedSnapshotRef.current = currentSnapshot;
 
           setSaveState("saved");
           onUpdated(updatedLetter);
@@ -228,7 +194,9 @@ export function LetterEditor({
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
-      "Delete this draft permanently?",
+      isDraft
+        ? "Delete this draft permanently? Its attachments will also be removed."
+        : "Delete this private letter permanently? Its share link and attachments will also be removed.",
     );
 
     if (!confirmed) {
@@ -239,19 +207,16 @@ export function LetterEditor({
     setSaveError(null);
 
     try {
-      await apiRequest<void>(
-        `/letters/${letter.id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      await apiRequest<void>(`/letters/${letter.id}`, {
+        method: "DELETE",
+      });
 
       onDeleted(letter.id);
     } catch (requestError: unknown) {
       setSaveError(
         requestError instanceof Error
           ? requestError.message
-          : "The draft could not be deleted.",
+          : "The letter could not be deleted.",
       );
 
       setSaveState("error");
@@ -262,14 +227,10 @@ export function LetterEditor({
   return (
     <div className="min-w-0 space-y-4">
       <div className="flex flex-col justify-between gap-4 rounded-[1.5rem] border border-line bg-surface/70 p-3 backdrop-blur-xl sm:flex-row sm:items-center">
-        <div
-          className="flex flex-wrap gap-2"
-          aria-label="Letter style"
-        >
+        <div className="flex flex-wrap gap-2" aria-label="Letter style">
           {themeOptions.map((option) => {
             const Icon = option.icon;
-            const selected =
-              type === option.type;
+            const selected = type === option.type;
 
             return (
               <button
@@ -287,10 +248,7 @@ export function LetterEditor({
                     : "border-transparent text-muted hover:border-line hover:text-foreground"
                 }`}
               >
-                <Icon
-                  aria-hidden="true"
-                  className="h-3.5 w-3.5"
-                />
+                <Icon aria-hidden="true" className="h-3.5 w-3.5" />
                 {option.label}
               </button>
             );
@@ -353,21 +311,20 @@ export function LetterEditor({
             </button>
           )}
 
-          {isDraft && (
-            <button
-              type="button"
-              onClick={() => void handleDelete()}
-              disabled={deleting}
-              aria-label="Delete draft"
-              className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition hover:border-rose/40 hover:bg-rose/10 hover:text-rose disabled:opacity-50"
-            >
-              {deleting ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => void handleDelete()}
+            disabled={deleting}
+            aria-label={isDraft ? "Delete draft" : "Delete private letter"}
+            title={isDraft ? "Delete draft" : "Delete private letter"}
+            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition hover:border-rose/40 hover:bg-rose/10 hover:text-rose disabled:opacity-50"
+          >
+            {deleting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -398,9 +355,7 @@ export function LetterEditor({
               value={recipientName}
               disabled={!isDraft}
               onChange={(event) => {
-                setRecipientName(
-                  event.target.value,
-                );
+                setRecipientName(event.target.value);
                 markUnsaved();
               }}
               maxLength={120}
@@ -438,23 +393,16 @@ export function LetterEditor({
             className="min-h-[25rem] w-full resize-y appearance-none border-0 bg-transparent p-0 font-display text-lg leading-9 text-paper-ink/85 outline-none ring-0 placeholder:text-paper-ink/25 focus:outline-none focus:ring-0"
           />
 
-          <LetterAttachments
-            letterId={letter.id}
-            readOnly={!isDraft}
-          />
+          <LetterAttachments letterId={letter.id} readOnly={!isDraft} />
 
           <div className="mt-10 border-t border-paper-ink/10 pt-7">
-            <p className="text-right text-sm text-paper-ink/45">
-              With care,
-            </p>
+            <p className="text-right text-sm text-paper-ink/45">With care,</p>
 
             <input
               value={senderName}
               disabled={!isDraft}
               onChange={(event) => {
-                setSenderName(
-                  event.target.value,
-                );
+                setSenderName(event.target.value);
                 markUnsaved();
               }}
               maxLength={120}
@@ -468,11 +416,7 @@ export function LetterEditor({
 
       <ShareLetterPanel
         letter={letter}
-        canPublish={
-          isDraft &&
-          previewReady &&
-          body.trim().length > 0
-        }
+        canPublish={isDraft && previewReady && body.trim().length > 0}
         onLetterUpdated={onUpdated}
       />
 
@@ -486,8 +430,7 @@ export function LetterEditor({
       )}
 
       <p className="text-center text-xs leading-5 text-muted">
-        Changes are encrypted in transit and
-        automatically saved to your private
+        Changes are encrypted in transit and automatically saved to your private
         account.
       </p>
     </div>

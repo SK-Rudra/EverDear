@@ -22,9 +22,7 @@ import { LettersService } from './letters.service.js';
 @Controller('letters')
 @UseGuards(SessionAuthGuard)
 export class LettersController {
-  constructor(
-    private readonly lettersService: LettersService,
-  ) {}
+  constructor(private readonly lettersService: LettersService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -32,19 +30,14 @@ export class LettersController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() createLetterDto: CreateLetterDto,
   ): Promise<LetterResponse> {
-    return this.lettersService.createDraft(
-      user.id,
-      createLetterDto,
-    );
+    return this.lettersService.createDraft(user.id, createLetterDto);
   }
 
   @Get()
   findUserLetters(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<LetterResponse[]> {
-    return this.lettersService.findUserLetters(
-      user.id,
-    );
+    return this.lettersService.findUserLetters(user.id);
   }
 
   @Get(':letterId')
@@ -58,10 +51,7 @@ export class LettersController {
     )
     letterId: string,
   ): Promise<LetterResponse> {
-    return this.lettersService.findOwnedLetter(
-      user.id,
-      letterId,
-    );
+    return this.lettersService.findOwnedLetter(user.id, letterId);
   }
 
   @Patch(':letterId')
@@ -76,16 +66,12 @@ export class LettersController {
     letterId: string,
     @Body() updateLetterDto: UpdateLetterDto,
   ): Promise<LetterResponse> {
-    return this.lettersService.updateDraft(
-      user.id,
-      letterId,
-      updateLetterDto,
-    );
+    return this.lettersService.updateDraft(user.id, letterId, updateLetterDto);
   }
 
   @Delete(':letterId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteDraft(
+  deleteLetter(
     @CurrentUser() user: AuthenticatedUser,
     @Param(
       'letterId',
@@ -95,9 +81,6 @@ export class LettersController {
     )
     letterId: string,
   ): Promise<void> {
-    return this.lettersService.deleteDraft(
-      user.id,
-      letterId,
-    );
+    return this.lettersService.deleteLetter(user.id, letterId);
   }
 }
