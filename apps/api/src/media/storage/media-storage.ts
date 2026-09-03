@@ -3,6 +3,7 @@ import type { Readable } from 'node:stream';
 export type PutMediaObjectInput = {
   storageKey: string;
   buffer: Buffer;
+  mimeType: string;
 };
 
 export type MediaObject = {
@@ -10,15 +11,9 @@ export type MediaObject = {
 };
 
 export abstract class MediaStorage {
-  abstract put(
-    input: PutMediaObjectInput,
-  ): Promise<void>;
+  abstract put(input: PutMediaObjectInput): Promise<void>;
 
-  abstract get(
-    storageKey: string,
-  ): Promise<MediaObject>;
+  abstract get(storageKey: string): Promise<MediaObject>;
 
-  abstract delete(
-    storageKey: string,
-  ): Promise<void>;
+  abstract delete(storageKey: string): Promise<void>;
 }

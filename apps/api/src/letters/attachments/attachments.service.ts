@@ -7,9 +7,7 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { Prisma } from '../../generated/prisma/client.js';
-import {
-  MAX_ATTACHMENTS_PER_LETTER,
-} from '../../media/media.constants.js';
+import { MAX_ATTACHMENTS_PER_LETTER } from '../../media/media.constants.js';
 import {
   MediaValidationService,
   type UploadedMediaFile,
@@ -39,22 +37,18 @@ const ATTACHMENT_SELECT = {
   updatedAt: true,
 } as const;
 
-type SelectedAttachment =
-  Prisma.LetterAttachmentGetPayload<{
-    select: typeof ATTACHMENT_SELECT;
-  }>;
+type SelectedAttachment = Prisma.LetterAttachmentGetPayload<{
+  select: typeof ATTACHMENT_SELECT;
+}>;
 
 @Injectable()
 export class AttachmentsService {
-  private readonly logger = new Logger(
-    AttachmentsService.name,
-  );
+  private readonly logger = new Logger(AttachmentsService.name);
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly mediaStorage: MediaStorage,
-    private readonly mediaValidation:
-      MediaValidationService,
+    private readonly mediaValidation: MediaValidationService,
   ) {}
 
   async uploadAttachment(
@@ -62,49 +56,39 @@ export class AttachmentsService {
     letterId: string,
     file: UploadedMediaFile | undefined,
   ): Promise<AttachmentResponse> {
-    await this.requireOwnedDraft(
-      userId,
-      letterId,
-    );
+    await this.requireOwnedDraft(userId, letterId);
 
-    const attachmentCount =
-      await this.prisma.letterAttachment.count({
-        where: {
-          letterId,
-        },
-      });
+    const attachmentCount = await this.prisma.letterAttachment.count({
+      where: {
+        letterId,
+      },
+    });
 
-    if (
-      attachmentCount >=
-      MAX_ATTACHMENTS_PER_LETTER
-    ) {
+    if (attachmentCount >= MAX_ATTACHMENTS_PER_LETTER) {
       throw new ConflictException(
         `A letter can contain up to ${MAX_ATTACHMENTS_PER_LETTER} attachments`,
       );
     }
 
     if (!file) {
-      throw new BadRequestException(
-        'Choose a media file to upload.',
-      );
+      throw new BadRequestException('Choose a media file to upload.');
     }
 
-    const [validatedMedia, lastAttachment] =
-      await Promise.all([
-        this.mediaValidation.validate(file),
+    const [validatedMedia, lastAttachment] = await Promise.all([
+      this.mediaValidation.validate(file),
 
-        this.prisma.letterAttachment.findFirst({
-          where: {
-            letterId,
-          },
-          orderBy: {
-            sortOrder: 'desc',
-          },
-          select: {
-            sortOrder: true,
-          },
-        }),
-      ]);
+      this.prisma.letterAttachment.findFirst({
+        where: {
+          letterId,
+        },
+        orderBy: {
+          sortOrder: 'desc',
+        },
+        select: {
+          sortOrder: true,
+        },
+      }),
+    ]);
 
     const storageKey = [
       'letters',
@@ -116,34 +100,27 @@ export class AttachmentsService {
     await this.mediaStorage.put({
       storageKey,
       buffer: file.buffer,
+      mimeType: validatedMedia.mimeType,
     });
 
     try {
-      const attachment =
-        await this.prisma.letterAttachment.create({
-          data: {
-            letterId,
-            type: validatedMedia.type,
-            status: 'READY',
-            storageKey,
-            originalName:
-              validatedMedia.originalName,
-            mimeType: validatedMedia.mimeType,
-            sizeBytes: validatedMedia.sizeBytes,
-            sortOrder:
-              (lastAttachment?.sortOrder ?? -1) +
-              1,
-          },
-          select: ATTACHMENT_SELECT,
-        });
+      const attachment = await this.prisma.letterAttachment.create({
+        data: {
+          letterId,
+          type: validatedMedia.type,
+          status: 'READY',
+          storageKey,
+          originalName: validatedMedia.originalName,
+          mimeType: validatedMedia.mimeType,
+          sizeBytes: validatedMedia.sizeBytes,
+          sortOrder: (lastAttachment?.sortOrder ?? -1) + 1,
+        },
+        select: ATTACHMENT_SELECT,
+      });
 
-      return this.toAttachmentResponse(
-        attachment,
-      );
+      return this.toAttachmentResponse(attachment);
     } catch (error: unknown) {
-      await this.mediaStorage
-        .delete(storageKey)
-        .catch(() => undefined);
+      await this.mediaStorage.delete(storageKey).catch(() => undefined);
 
       throw error;
     }
@@ -153,26 +130,22 @@ export class AttachmentsService {
     userId: string,
     letterId: string,
   ): Promise<AttachmentResponse[]> {
-    await this.requireOwnedLetter(
-      userId,
-      letterId,
-    );
+    await this.requireOwnedLetter(userId, letterId);
 
-    const attachments =
-      await this.prisma.letterAttachment.findMany({
-        where: {
-          letterId,
+    const attachments = await this.prisma.letterAttachment.findMany({
+      where: {
+        letterId,
+      },
+      orderBy: [
+        {
+          sortOrder: 'asc',
         },
-        orderBy: [
-          {
-            sortOrder: 'asc',
-          },
-          {
-            createdAt: 'asc',
-          },
-        ],
-        select: ATTACHMENT_SELECT,
-      });
+        {
+          createdAt: 'asc',
+        },
+      ],
+      select: ATTACHMENT_SELECT,
+    });
 
     return attachments.map((attachment) =>
       this.toAttachmentResponse(attachment),
@@ -184,32 +157,19 @@ export class AttachmentsService {
     letterId: string,
     attachmentId: string,
   ): Promise<OpenedAttachment> {
-    await this.requireOwnedLetter(
-      userId,
-      letterId,
-    );
+    await this.requireOwnedLetter(userId, letterId);
 
-    const attachment =
-      await this.findAttachment(
-        letterId,
-        attachmentId,
-      );
+    const attachment = await this.findAttachment(letterId, attachmentId);
 
     if (attachment.status !== 'READY') {
-      throw new ConflictException(
-        'Attachment content is not ready',
-      );
+      throw new ConflictException('Attachment content is not ready');
     }
 
     try {
-      const mediaObject =
-        await this.mediaStorage.get(
-          attachment.storageKey,
-        );
+      const mediaObject = await this.mediaStorage.get(attachment.storageKey);
 
       return {
-        attachment:
-          this.toAttachmentResponse(attachment),
+        attachment: this.toAttachmentResponse(attachment),
         stream: mediaObject.stream,
       };
     } catch {
@@ -217,9 +177,7 @@ export class AttachmentsService {
         `Stored media is missing for attachment ${attachment.id}`,
       );
 
-      throw new NotFoundException(
-        'Attachment content is unavailable',
-      );
+      throw new NotFoundException('Attachment content is unavailable');
     }
   }
 
@@ -228,46 +186,28 @@ export class AttachmentsService {
     letterId: string,
     attachmentId: string,
   ): Promise<void> {
-    await this.requireOwnedDraft(
-      userId,
-      letterId,
-    );
+    await this.requireOwnedDraft(userId, letterId);
 
-    const attachment =
-      await this.findAttachment(
+    const attachment = await this.findAttachment(letterId, attachmentId);
+
+    const deleteResult = await this.prisma.letterAttachment.deleteMany({
+      where: {
+        id: attachmentId,
         letterId,
-        attachmentId,
-      );
-
-    const deleteResult =
-      await this.prisma.letterAttachment.deleteMany(
-        {
-          where: {
-            id: attachmentId,
-            letterId,
-          },
-        },
-      );
+      },
+    });
 
     if (deleteResult.count === 0) {
-      throw new NotFoundException(
-        'Attachment not found',
-      );
+      throw new NotFoundException('Attachment not found');
     }
 
-    const storageKeys = [
-      attachment.storageKey,
-      attachment.thumbnailKey,
-    ].filter(
-      (storageKey): storageKey is string =>
-        Boolean(storageKey),
+    const storageKeys = [attachment.storageKey, attachment.thumbnailKey].filter(
+      (storageKey): storageKey is string => Boolean(storageKey),
     );
 
     try {
       await Promise.all(
-        storageKeys.map((storageKey) =>
-          this.mediaStorage.delete(storageKey),
-        ),
+        storageKeys.map((storageKey) => this.mediaStorage.delete(storageKey)),
       );
     } catch {
       this.logger.warn(
@@ -276,26 +216,20 @@ export class AttachmentsService {
     }
   }
 
-  private async requireOwnedLetter(
-    userId: string,
-    letterId: string,
-  ) {
-    const letter =
-      await this.prisma.letter.findFirst({
-        where: {
-          id: letterId,
-          userId,
-        },
-        select: {
-          id: true,
-          status: true,
-        },
-      });
+  private async requireOwnedLetter(userId: string, letterId: string) {
+    const letter = await this.prisma.letter.findFirst({
+      where: {
+        id: letterId,
+        userId,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
 
     if (!letter) {
-      throw new NotFoundException(
-        'Letter not found',
-      );
+      throw new NotFoundException('Letter not found');
     }
 
     return letter;
@@ -305,11 +239,7 @@ export class AttachmentsService {
     userId: string,
     letterId: string,
   ): Promise<void> {
-    const letter =
-      await this.requireOwnedLetter(
-        userId,
-        letterId,
-      );
+    const letter = await this.requireOwnedLetter(userId, letterId);
 
     if (letter.status !== 'DRAFT') {
       throw new ConflictException(
@@ -322,19 +252,16 @@ export class AttachmentsService {
     letterId: string,
     attachmentId: string,
   ): Promise<SelectedAttachment> {
-    const attachment =
-      await this.prisma.letterAttachment.findFirst({
-        where: {
-          id: attachmentId,
-          letterId,
-        },
-        select: ATTACHMENT_SELECT,
-      });
+    const attachment = await this.prisma.letterAttachment.findFirst({
+      where: {
+        id: attachmentId,
+        letterId,
+      },
+      select: ATTACHMENT_SELECT,
+    });
 
     if (!attachment) {
-      throw new NotFoundException(
-        'Attachment not found',
-      );
+      throw new NotFoundException('Attachment not found');
     }
 
     return attachment;
@@ -353,8 +280,7 @@ export class AttachmentsService {
       sizeBytes: attachment.sizeBytes,
       width: attachment.width,
       height: attachment.height,
-      durationSeconds:
-        attachment.durationSeconds,
+      durationSeconds: attachment.durationSeconds,
       sortOrder: attachment.sortOrder,
       contentPath:
         `/api/v1/letters/${attachment.letterId}` +

@@ -5,10 +5,7 @@ import {
   S3Client,
   type S3ClientConfig,
 } from '@aws-sdk/client-s3';
-import {
-  Injectable,
-  type OnModuleDestroy,
-} from '@nestjs/common';
+import { Injectable, type OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Readable } from 'node:stream';
 import {
@@ -29,60 +26,37 @@ export class S3MediaStorageService
   constructor(configService: ConfigService) {
     super();
 
-    this.bucket =
-      configService.getOrThrow<string>(
-        'S3_BUCKET',
-      );
+    this.bucket = configService.getOrThrow<string>('S3_BUCKET');
 
-    const endpoint =
-      configService.get<string>(
-        'S3_ENDPOINT',
-      );
+    const endpoint = configService.get<string>('S3_ENDPOINT');
 
-    const accessKeyId =
-      configService.get<string>(
-        'S3_ACCESS_KEY_ID',
-      );
+    const accessKeyId = configService.get<string>('S3_ACCESS_KEY_ID');
 
-    const secretAccessKey =
-      configService.get<string>(
-        'S3_SECRET_ACCESS_KEY',
-      );
+    const secretAccessKey = configService.get<string>('S3_SECRET_ACCESS_KEY');
 
     const clientConfiguration: S3ClientConfig = {
-      region:
-        configService.getOrThrow<string>(
-          'S3_REGION',
-        ),
-      forcePathStyle:
-        configService.get<boolean>(
-          'S3_FORCE_PATH_STYLE',
-          false,
-        ),
+      region: configService.getOrThrow<string>('S3_REGION'),
+      forcePathStyle: configService.get<boolean>('S3_FORCE_PATH_STYLE', false),
     };
 
     if (endpoint) {
       clientConfiguration.endpoint = endpoint;
     }
 
-    if (
-      accessKeyId &&
-      secretAccessKey
-    ) {
+    if (accessKeyId && secretAccessKey) {
       clientConfiguration.credentials = {
         accessKeyId,
         secretAccessKey,
       };
     }
 
-    this.client = new S3Client(
-      clientConfiguration,
-    );
+    this.client = new S3Client(clientConfiguration);
   }
 
   async put({
     storageKey,
     buffer,
+    mimeType,
   }: PutMediaObjectInput): Promise<void> {
     assertMediaStorageKey(storageKey);
 
@@ -92,13 +66,12 @@ export class S3MediaStorageService
         Key: storageKey,
         Body: buffer,
         ContentLength: buffer.length,
+        ContentType: mimeType,
       }),
     );
   }
 
-  async get(
-    storageKey: string,
-  ): Promise<MediaObject> {
+  async get(storageKey: string): Promise<MediaObject> {
     assertMediaStorageKey(storageKey);
 
     const result = await this.client.send(
@@ -109,9 +82,7 @@ export class S3MediaStorageService
     );
 
     if (!(result.Body instanceof Readable)) {
-      throw new Error(
-        'S3 returned an unreadable media object.',
-      );
+      throw new Error('S3 returned an unreadable media object.');
     }
 
     return {
@@ -119,9 +90,7 @@ export class S3MediaStorageService
     };
   }
 
-  async delete(
-    storageKey: string,
-  ): Promise<void> {
+  async delete(storageKey: string): Promise<void> {
     assertMediaStorageKey(storageKey);
 
     await this.client.send(
